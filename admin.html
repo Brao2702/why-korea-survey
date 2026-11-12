@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>왜 한국 설문 관리</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: summary first (counts, quota per country), then one panel per question, then the raw table. Same tokens as the survey. */
+:root{
+  --bg:#EEF7FA; --bg-2:#DDEFF5; --surface:#FFFFFF; --ink:#14313D; --muted:#58737F; --line:#D3E4EA; --track:#E6F0F4;
+  --accent:#12957E; --accent-ink:#0B6B5A; --accent-soft:#DDF4EE; --on-accent:#FFFFFF;
+  --sun:#F4B63F; --sun-soft:#FFF2D2; --on-sun:#3A2A05; --coral:#E3644F; --coral-soft:#FDE9E5;
+  --c-VN:#d94841; --c-CN:#d9871c; --c-MN:#3576d6; --c-NP:#8b5bd6; --c-ETC:#7b8f98;
+  --font-body:'Be Vietnam Pro','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --font-display:'Gowun Dodum','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1D24; --bg-2:#13303A; --surface:#172C36; --ink:#E7F2F5; --muted:#9AB3BD; --line:#2B4653; --track:#22404C;
+  --accent:#3CC9AF; --accent-ink:#7FE0CD; --accent-soft:#16393A; --on-accent:#06231D;
+  --sun:#F4B63F; --sun-soft:#3A2F14; --on-sun:#3A2A05; --coral:#F08878; --coral-soft:#3B211D;
+  --c-VN:#ef6a62; --c-CN:#eda03c; --c-MN:#5b97ee; --c-NP:#a583ea; --c-ETC:#9fb2ba; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0E1D24; --bg-2:#13303A; --surface:#172C36; --ink:#E7F2F5; --muted:#9AB3BD; --line:#2B4653; --track:#22404C;
+  --accent:#3CC9AF; --accent-ink:#7FE0CD; --accent-soft:#16393A; --on-accent:#06231D;
+  --sun:#F4B63F; --sun-soft:#3A2F14; --on-sun:#3A2A05; --coral:#F08878; --coral-soft:#3B211D;
+  --c-VN:#ef6a62; --c-CN:#eda03c; --c-MN:#5b97ee; --c-NP:#a583ea; --c-ETC:#9fb2ba; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+.num{font-variant-numeric:tabular-nums}
+h1{font-family:var(--font-display);font-weight:400;font-size:26px;margin:0;line-height:1.3}
+h2{font-size:15px;font-weight:700;margin:0;text-wrap:balance}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+
+/* login */
+.login{max-width:400px;margin:8vh auto 0;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:28px 24px;display:flex;flex-direction:column;gap:14px}
+.field{width:100%;min-height:48px;padding:10px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface)}
+.field:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.btn{min-height:40px;padding:0 14px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.big{min-height:48px;font-size:15px}
+.btn[disabled]{opacity:.45;cursor:default}
+.err{color:var(--coral);font-size:13.5px;margin:0;min-height:20px}
+
+/* header */
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.head-l{display:flex;flex-direction:column;gap:2px;min-width:0}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700}
+.pill.open{background:var(--accent-soft);color:var(--accent-ink)}
+.pill.closed{background:var(--coral-soft);color:var(--coral)}
+.pill.demo{background:var(--sun-soft);color:var(--ink);border:1px dashed var(--sun)}
+.toast{font-size:13px;color:var(--accent-ink);min-height:20px;margin:0}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{min-height:36px;padding:4px 13px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.sw{width:10px;height:10px;border-radius:3px;flex:none;display:inline-block}
+.toggle{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted);margin-left:auto;cursor:pointer}
+
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpi .lbl{font-size:12.5px;color:var(--muted)}
+.kpi .val{font-family:var(--font-display);font-size:30px;line-height:1.15}
+.kpi .sub{font-size:12px;color:var(--muted)}
+
+/* panels */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel.full{grid-column:1/-1}
+.panel-h{display:flex;flex-direction:column;gap:2px}
+.qn{font-size:11.5px;font-weight:700;letter-spacing:.1em;color:var(--accent-ink)}
+.empty{color:var(--muted);font-size:13.5px;margin:0;padding:10px 0}
+
+.bars{display:flex;flex-direction:column;gap:9px}
+.bar{display:grid;grid-template-columns:minmax(0,38%) minmax(0,1fr) auto;gap:10px;align-items:center}
+@media (max-width:520px){.bar{grid-template-columns:minmax(0,1fr) auto}.bar .bar-l{grid-column:1/-1}}
+.bar-l{font-size:13.5px;overflow-wrap:anywhere;line-height:1.35}
+.bar-t{height:18px;border-radius:5px;background:var(--track);display:flex;overflow:hidden;position:relative}
+.bar-t span{height:100%;min-width:0}
+.bar-t .mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.55}
+.bar-v{font-size:12.5px;color:var(--muted);white-space:nowrap;text-align:right;min-width:74px}
+.bar-v b{color:var(--ink);font-weight:700}
+.tag{font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;background:var(--sun-soft);color:var(--ink);border:1px solid var(--sun);margin-left:6px;white-space:nowrap}
+
+.days{display:flex;align-items:flex-end;gap:4px;height:92px;overflow-x:auto;padding-top:16px}
+.day{flex:1 0 18px;max-width:44px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%}
+.day i{width:100%;border-radius:4px 4px 0 0;background:var(--accent);min-height:2px;display:block}
+.day span{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.day b{font-size:11px;font-weight:600}
+
+.dots{display:flex;flex-direction:column;gap:12px}
+.dotrow{display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr) 44px;gap:10px;align-items:center}
+.dot-t{position:relative;height:20px}
+.dot-t::before{content:"";position:absolute;left:0;right:0;top:9px;height:2px;background:var(--track)}
+.dot-t i{position:absolute;top:3px;width:14px;height:14px;border-radius:50%;margin-left:-7px;border:2px solid var(--surface)}
+.axis{display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr) 44px;gap:10px;font-size:11px;color:var(--muted)}
+.axis div{display:flex;justify-content:space-between}
+
+.hist{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:4px;align-items:end;height:96px}
+.hist div{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;height:100%}
+.hist i{width:100%;border-radius:4px 4px 0 0;min-height:2px;display:block}
+.hist span{font-size:11px;color:var(--muted)}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);list-style:none;margin:0;padding:0}
+.legend li{display:flex;align-items:center;gap:6px}
+
+.quotes{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow:auto;list-style:none;margin:0;padding:0}
+.quotes li{border-left:3px solid var(--line);padding:2px 0 2px 10px;font-size:13.5px;overflow-wrap:anywhere}
+.quotes small{display:block;color:var(--muted);font-size:11.5px}
+
+.tablewrap{overflow:auto;max-height:460px}
+thead th{position:sticky;top:0;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+th{text-align:left;font-size:11.5px;color:var(--muted);font-weight:600;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+tr.x td{opacity:.45;text-decoration:line-through}
+tr.x td:last-child{opacity:1;text-decoration:none}
+.flag{font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;background:var(--coral-soft);color:var(--coral);margin-right:4px}
+.linkbtn{border:0;background:none;color:var(--accent-ink);font-weight:600;font-size:12.5px;cursor:pointer;padding:4px 0;text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- 로그인 -->
+  <section class="login" id="login" hidden>
+    <h1>설문 관리</h1>
+    <p class="muted" id="loginLead" style="margin:0">「왜 한국이었나요?」 응답을 확인합니다.</p>
+    <form id="loginForm" style="display:flex;flex-direction:column;gap:12px">
+      <input class="field" id="pw" type="password" inputmode="numeric" autocomplete="current-password" placeholder="관리자 비밀번호" aria-label="관리자 비밀번호">
+      <button class="btn primary big" id="loginBtn" type="submit">들어가기</button>
+    </form>
+    <button class="btn primary big" id="demoBtn" type="button" hidden>예시 데이터로 보기</button>
+    <p class="err" id="loginErr" role="alert"></p>
+  </section>
+
+  <!-- 대시보드 -->
+  <div id="dash" hidden style="display:flex;flex-direction:column;gap:18px">
+    <header class="head">
+      <div class="head-l">
+        <h1>왜 한국이었나요? · 응답 현황</h1>
+        <div class="muted small"><span id="statePill"></span> <span id="updated"></span></div>
+      </div>
+      <div class="tools">
+        <button class="btn" id="btnRefresh" type="button">새로고침</button>
+        <button class="btn" id="btnOpen" type="button">설문 닫기</button>
+        <button class="btn" id="btnCsv" type="button">CSV 내려받기</button>
+        <button class="btn" id="btnBackup" type="button">지금 백업</button>
+        <button class="btn" id="btnLogout" type="button">나가기</button>
+      </div>
+    </header>
+    <p class="toast" id="toast" role="status"></p>
+
+    <section class="kpis" id="kpis" aria-label="요약"></section>
+
+    <div class="filters" id="filters" role="group" aria-label="국가 선택"></div>
+    <ul class="legend" id="legend" aria-label="막대와 점의 색"></ul>
+
+    <div class="grid">
+      <section class="panel"><div class="panel-h"><h2>국가별 응답 수와 목표</h2><span class="muted small" id="quotaNote"></span></div><div class="bars" id="pQuota"></div></section>
+      <section class="panel"><div class="panel-h"><h2>날짜별 응답 수</h2><span class="muted small">제출일 기준 (한국 시간)</span></div><div class="days" id="pDays"></div></section>
+
+      <section class="panel"><div class="panel-h"><span class="qn">Q2</span><h2>현재 과정 (체류자격)</h2></div><div class="bars" id="pQ2"></div></section>
+      <section class="panel"><div class="panel-h"><span class="qn">Q3</span><h2>처음 입국한 해</h2></div><div class="bars" id="pQ3"></div></section>
+      <section class="panel"><div class="panel-h"><span class="qn">Q4</span><h2>어학연수 → 학위과정</h2></div><div class="bars" id="pQ4"></div></section>
+      <section class="panel"><div class="panel-h"><span class="qn">Q6</span><h2>가장 큰 영향을 준 정보 경로</h2></div><div class="bars" id="pQ6"></div></section>
+      <section class="panel full"><div class="panel-h"><span class="qn">Q5</span><h2>한국을 고른 이유 (순위 점수)</h2><span class="muted small">1순위 3점 · 2순위 2점 · 3순위 1점을 더한 값</span></div><div class="bars" id="pQ5"></div></section>
+      <section class="panel"><div class="panel-h"><span class="qn">Q7</span><h2>함께 고민한 나라</h2></div><div class="bars" id="pQ7"></div></section>
+      <section class="panel"><div class="panel-h"><span class="qn">Q9</span><h2>졸업 후 계획</h2><span class="muted small" id="sureNote"></span></div><div class="bars" id="pQ9"></div></section>
+      <section class="panel"><div class="panel-h"><span class="qn">Q8</span><h2>항목별 만족도 평균 (1~5점)</h2></div><div id="pQ8"></div></section>
+      <section class="panel"><div class="panel-h"><span class="qn">Q10</span><h2>추천 의향 (0~10점)</h2><span class="muted small">NPS = 9~10점 비율 − 0~6점 비율</span></div><div class="hist" id="pHist"></div><div class="bars" id="pNps"></div></section>
+      <section class="panel"><div class="panel-h"><span class="qn">Q7 · 주관식</span><h2>그래도 한국을 고른 결정적 이유</h2></div><ul class="quotes" id="pWhy7"></ul></section>
+      <section class="panel"><div class="panel-h"><span class="qn">Q10 · 주관식</span><h2>추천 점수의 이유</h2></div><ul class="quotes" id="pWhy10"></ul></section>
+      <section class="panel full"><div class="panel-h"><h2>응답 목록</h2><span class="muted small">주의 표시: 빠름 = 45초 안에 끝냄 · 같은 점수 = 만족도 6항목이 모두 같음. 테스트 응답은 ‘제외’를 눌러 집계에서 빼세요.</span></div>
+        <div class="tablewrap"><table><thead><tr><th>제출 시각</th><th>국가</th><th>과정</th><th>입국</th><th>소요</th><th>추천</th><th>언어</th><th>경로</th><th>주의</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function(){
+'use strict';
+var CFG = Object.assign({API_URL:'', TARGET_PER_COUNTRY:30}, window.SURVEY_CONFIG || {});
+var PREVIEW = !CFG.API_URL;
+var TARGET = Number(CFG.TARGET_PER_COUNTRY) || 30;
+var CC = ['VN','CN','MN','NP','ETC'];
+var L = {
+  q1:{VN:'베트남',CN:'중국',MN:'몽골',NP:'네팔',ETC:'그 외'},
+  q2:{d4:'어학연수 (D-4)',d2_ba:'학부 (D-2)',d2_ma:'석사 (D-2)',d2_phd:'박사 (D-2)',exch:'교환·방문',other:'기타'},
+  q3:{le2020:'2020 이전','2021':'2021','2022':'2022','2023':'2023','2024':'2024','2025':'2025','2026':'2026'},
+  q4:{plan:'진학할 계획이다 (D-4)',noplan:'진학 계획 없다',unsure:'아직 모르겠다',moved:'어학연수 → 학위과정으로 옮김',direct:'처음부터 학위과정'},
+  q5:{cost:'학비·생활비가 저렴',schol:'장학금',job:'졸업 후 한국 취업',parttime:'유학 중 아르바이트',culture:'한국 문화·한류',quality:'교육 수준',network:'가족·친구가 한국에 있음',visa:'비자 받기 쉬움',other:'기타'},
+  q6:{agency:'유학원',peers:'먼저 온 친구·가족',sns:'SNS·유튜브',univ:'대학 홍보·설명회',gov:'정부 장학 (GKS 등)',school:'본국 학교·선생님',other:'기타'},
+  q7:{none:'한국만 생각했다',JP:'일본',US:'미국',AU:'호주',CN:'중국',EU:'유럽',TW:'대만',other:'기타'},
+  q8:{study:'수업·학업',cost:'학비·생활비 부담',job:'아르바이트 기회',visa:'비자·체류 절차',korean:'한국어 적응',support:'학교의 유학생 지원'},
+  q9:{kr_job:'한국에서 취업',kr_study:'한국에서 진학',home:'본국 귀국',third:'다른 나라로 이동',unsure:'아직 모르겠다',other:'기타'},
+  flag:{fast:'빠름',straight:'같은 점수'}
+};
+var EXPORT_COLS = ['id','submitted_at','lang','src','device','duration_sec','q1','q1_other','q2','q2_other','q3','q4','q5_1','q5_2','q5_3','q5_other','q6','q6_other','q7','q7_other','q7_why','q8_study','q8_cost','q8_job','q8_visa','q8_korean','q8_support','q9','q9_other','q9_sure','q10','q10_why','flags','excluded'];
+
+var ROWS = [], OPEN = true, TOKEN = null, FILTER = 'ALL', SHOW_X = false, DEMO = false, timer = 0;
+function $(id){ return document.getElementById(id); }
+function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined && text !== null) e.textContent = text; return e; }
+function color(c){ return 'var(--c-' + c + ')'; }
+function pct(a, b){ return b ? Math.round(a / b * 100) : 0; }
+function fmt1(v){ return (Math.round(v * 10) / 10).toFixed(1); }
+function sstore(k, v){ try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { return null; } }
+
+function api(action, body){
+  return fetch(CFG.API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(Object.assign({action:action, token:TOKEN}, body || {}))})
+    .then(function(r){ return r.json(); });
+}
+function norm(r){
+  var o = Object.assign({}, r);
+  ['duration_sec','q8_study','q8_cost','q8_job','q8_visa','q8_korean','q8_support','q9_sure','q10'].forEach(function(k){ o[k] = (o[k] === '' || o[k] === null || o[k] === undefined) ? null : Number(o[k]); });
+  ['q1','q2','q3','q4','q5_1','q5_2','q5_3','q6','q7','q9','lang','src','flags','submitted_at','id'].forEach(function(k){ o[k] = o[k] === null || o[k] === undefined ? '' : String(o[k]); });
+  if (!L.q1[o.q1]) o.q1 = 'ETC';
+  o.excluded = String(o.excluded || '') === '1' || o.excluded === true;
+  o._flags = o.flags ? o.flags.split(',').filter(Boolean) : [];
+  o._q7 = o.q7 ? o.q7.split('|').filter(Boolean) : [];
+  return o;
+}
+
+/* ───────────── 예시 데이터 (미리보기 전용) ───────────── */
+function demoRows(){
+  var seed = 20261111;
+  function rnd(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; var x = Math.imul(seed ^ seed >>> 15, 1 | seed); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; }
+  function pickW(o){ var ks = Object.keys(o), s = 0, i; for (i = 0; i < ks.length; i++) s += o[ks[i]]; var r = rnd() * s; for (i = 0; i < ks.length; i++) { r -= o[ks[i]]; if (r <= 0) return ks[i]; } return ks[ks.length - 1]; }
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, Math.round(v))); }
+  var plan = {VN:34, CN:26, MN:14, NP:19, ETC:7};
+  var why5 = {
+    VN:{cost:3,schol:2,job:4,parttime:4,culture:3,quality:2,network:3,visa:1},
+    CN:{cost:2,schol:1,job:1,parttime:1,culture:4,quality:4,network:2,visa:2},
+    MN:{cost:2,schol:3,job:3,parttime:2,culture:3,quality:3,network:3,visa:1},
+    NP:{cost:2,schol:2,job:5,parttime:5,culture:1,quality:2,network:4,visa:3},
+    ETC:{cost:1,schol:4,job:2,parttime:1,culture:4,quality:4,network:1,visa:1}
+  };
+  var path6 = {VN:{agency:5,peers:4,sns:3,univ:1,gov:1,school:1},CN:{agency:3,peers:2,sns:3,univ:3,gov:1,school:2},MN:{agency:2,peers:4,sns:2,univ:2,gov:3,school:1},NP:{agency:6,peers:5,sns:2,univ:1,gov:1,school:1},ETC:{agency:1,peers:2,sns:3,univ:3,gov:4,school:1}};
+  var yearW = {VN:{le2020:2,'2021':2,'2022':3,'2023':5,'2024':7,'2025':8,'2026':3},CN:{le2020:5,'2021':4,'2022':5,'2023':5,'2024':4,'2025':3,'2026':1},MN:{le2020:2,'2021':2,'2022':3,'2023':4,'2024':5,'2025':4,'2026':2},NP:{le2020:0.3,'2021':0.3,'2022':0.6,'2023':3,'2024':7,'2025':9,'2026':4},ETC:{le2020:1,'2021':1,'2022':2,'2023':3,'2024':3,'2025':3,'2026':1}};
+  var whys7 = ['학비가 훨씬 저렴했다','먼저 온 선배가 추천했다','아르바이트를 할 수 있어서','한국어를 이미 배우고 있었다','장학금 조건이 좋았다','집에서 가까워서'];
+  var whys10 = ['학교 지원이 잘 되어 있다','생활비가 생각보다 많이 든다','취업 정보가 부족하다','한국어가 어렵지만 배울 가치가 있다','비자 연장 절차가 복잡하다','친구를 많이 사귀었다'];
+  var rows = [], n = 0, base = new Date(2026, 10, 2).getTime();
+  CC.forEach(function(c){
+    for (var i = 0; i < plan[c]; i++) {
+      var q2 = pickW(c === 'NP' ? {d4:6,d2_ba:3,d2_ma:1} : c === 'CN' ? {d4:1,d2_ba:4,d2_ma:3,d2_phd:2,exch:1} : {d4:4,d2_ba:4,d2_ma:2,d2_phd:0.5,exch:0.5});
+      var q4 = q2 === 'd4' ? pickW({plan:6,noplan:1,unsure:2}) : /^d2/.test(q2) ? pickW(c === 'CN' ? {moved:2,direct:5} : {moved:5,direct:3}) : pickW({plan:2,noplan:3,unsure:2});
+      var w = Object.assign({}, why5[c]), q5 = [];
+      for (var k = 0; k < 3; k++) { var p = pickW(w); q5.push(p); delete w[p]; }
+      var only = rnd() < (c === 'NP' ? 0.35 : 0.5);
+      var q7 = only ? 'none' : [pickW({JP:5,US:2,AU:3,EU:2,TW:1})].concat(rnd() < 0.3 ? ['US'] : []).filter(function(v, ix, a){ return a.indexOf(v) === ix; }).join('|');
+      var bias = {VN:0.2, CN:-0.1, MN:0.1, NP:0, ETC:0.3}[c];
+      var q8 = {study:clamp(3.8 + bias + (rnd() - 0.5) * 2.4, 1, 5), cost:clamp(2.7 + bias + (rnd() - 0.5) * 2.6, 1, 5), job:clamp((c === 'NP' ? 3.6 : 3.1) + (rnd() - 0.5) * 2.6, 1, 5), visa:clamp(2.9 + (rnd() - 0.5) * 2.4, 1, 5), korean:clamp(3.2 + (rnd() - 0.5) * 2.6, 1, 5), support:clamp(3.5 + bias + (rnd() - 0.5) * 2.4, 1, 5)};
+      var q9 = pickW(c === 'NP' ? {kr_job:6,kr_study:2,home:1,third:2,unsure:2} : c === 'CN' ? {kr_job:2,kr_study:2,home:5,third:1,unsure:2} : {kr_job:4,kr_study:2,home:3,third:1,unsure:2});
+      var q10 = clamp(8 + bias * 2 + (rnd() - 0.5) * 5.4, 0, 10);
+      var dur = clamp(70 + rnd() * 220, 20, 600), flags = [];
+      if (rnd() < 0.05) { dur = clamp(18 + rnd() * 20, 10, 44); flags.push('fast'); }
+      if (rnd() < 0.04) { q8 = {study:3,cost:3,job:3,visa:3,korean:3,support:3}; flags.push('straight'); }
+      var d = new Date(base + Math.floor(rnd() * 9) * 86400000 + Math.floor(rnd() * 50000) * 1000);
+      rows.push({id:'demo' + (++n), submitted_at:d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + 'T' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':00',
+        lang:c === 'VN' ? 'vi' : c === 'CN' ? 'zh' : rnd() < 0.5 ? 'ko' : 'en', src:pickW({kakao:4,zalo:2,wechat:2,'':3}), device:rnd() < 0.8 ? 'mobile' : 'desktop', duration_sec:dur,
+        q1:c, q1_other:'', q2:q2, q2_other:'', q3:pickW(yearW[c]), q4:q4, q5_1:q5[0], q5_2:q5[1], q5_3:q5[2], q5_other:'', q6:pickW(path6[c]), q6_other:'',
+        q7:q7, q7_other:'', q7_why:(!only && rnd() < 0.45) ? whys7[Math.floor(rnd() * whys7.length)] : '',
+        q8_study:q8.study, q8_cost:q8.cost, q8_job:q8.job, q8_visa:q8.visa, q8_korean:q8.korean, q8_support:q8.support,
+        q9:q9, q9_other:'', q9_sure:q9 === 'unsure' ? '' : Math.round((30 + rnd() * 70) / 10) * 10, q10:q10, q10_why:rnd() < 0.4 ? whys10[Math.floor(rnd() * whys10.length)] : '', flags:flags.join(','), excluded:''});
+    }
+  });
+  rows.sort(function(a, b){ return a.submitted_at < b.submitted_at ? -1 : 1; });
+  return rows;
+}
+
+/* ───────────── 그리기 ───────────── */
+function setBusy(b){ ['btnRefresh','btnOpen','btnBackup'].forEach(function(id){ $(id).disabled = b || DEMO; }); $('btnCsv').disabled = DEMO; }
+function toast(msg){ $('toast').textContent = msg || ''; }
+function visible(){ return ROWS.filter(function(r){ return (SHOW_X || !r.excluded) && (FILTER === 'ALL' || r.q1 === FILTER); }); }
+
+/** 가로 막대: counts[option][country] */
+function bars(host, opts, labelOf, rows, valuesOf, o){
+  o = o || {};
+  host.replaceChildren();
+  var counts = {}, firsts = {};
+  opts.forEach(function(k){ counts[k] = {}; firsts[k] = 0; });
+  var answered = 0;
+  rows.forEach(function(r){
+    var vals = valuesOf(r);
+    if (vals.length) answered++;
+    vals.forEach(function(v, i){ if (!counts[v[0]]) return; counts[v[0]][r.q1] = (counts[v[0]][r.q1] || 0) + v[1]; if (i === 0) firsts[v[0]]++; });
+  });
+  var list = opts.map(function(k){ var tot = 0; CC.forEach(function(c){ tot += counts[k][c] || 0; }); return {k:k, tot:tot}; });
+  if (o.sort) list.sort(function(a, b){ return b.tot - a.tot; });
+  var max = Math.max.apply(null, list.map(function(x){ return x.tot; }).concat([1]));
+  if (!answered) { host.append(el('p', 'empty', '아직 응답이 없습니다.')); return; }
+  list.forEach(function(x){
+    var row = el('div', 'bar');
+    row.append(el('div', 'bar-l', labelOf(x.k)));
+    var tr = el('div', 'bar-t');
+    CC.forEach(function(c){ var v = counts[x.k][c] || 0; if (!v) return; var s = el('span'); s.style.width = (v / max * 100) + '%'; s.style.background = color(c); s.title = L.q1[c] + ' ' + v; tr.append(s); });
+    row.append(tr);
+    var v = el('div', 'bar-v num');
+    if (o.weighted) { v.append(el('b', null, String(x.tot)), document.createTextNode('점 · 1순위 ' + firsts[x.k] + '명')); }
+    else { v.append(el('b', null, String(x.tot)), document.createTextNode('명 · ' + pct(x.tot, answered) + '%')); }
+    row.append(v);
+    host.append(row);
+  });
+}
+
+function draw(){
+  var all = ROWS, valid = ROWS.filter(function(r){ return !r.excluded; }), rows = visible();
+  $('statePill').className = 'pill ' + (DEMO ? 'demo' : OPEN ? 'open' : 'closed');
+  $('statePill').textContent = DEMO ? '예시 데이터 · 실제 응답이 아닙니다' : OPEN ? '설문 진행 중' : '설문 마감됨';
+  $('btnOpen').textContent = OPEN ? '설문 닫기' : '설문 다시 열기';
+
+  // 요약
+  var today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+  var durs = valid.map(function(r){ return r.duration_sec; }).filter(function(v){ return v !== null; }).sort(function(a, b){ return a - b; });
+  var med = durs.length ? durs[Math.floor(durs.length / 2)] : null;
+  var flagged = valid.filter(function(r){ return r._flags.length; }).length;
+  var k = $('kpis'); k.replaceChildren();
+  [['전체 응답', all.length, '제외 ' + (all.length - valid.length) + '건 포함'],
+   ['유효 응답', valid.length, '집계에 쓰는 응답'],
+   ['오늘 들어온 응답', DEMO ? '–' : valid.filter(function(r){ return r.submitted_at.slice(0, 10) === today; }).length, today],
+   ['응답 시간 중앙값', med === null ? '–' : Math.floor(med / 60) + '분 ' + (med % 60) + '초', '너무 짧으면 성의 없는 응답일 수 있음'],
+   ['주의 표시', flagged, '빠름 또는 같은 점수']].forEach(function(x){
+    var t = el('div', 'kpi'); t.append(el('span', 'lbl', x[0]), el('span', 'val num', String(x[1])), el('span', 'sub', x[2])); k.append(t);
+  });
+
+  // 국가 필터
+  var f = $('filters'); f.replaceChildren();
+  [['ALL', '전체']].concat(CC.map(function(c){ return [c, L.q1[c]]; })).forEach(function(x){
+    var b = el('button', 'chip'); b.type = 'button'; b.setAttribute('aria-pressed', String(FILTER === x[0]));
+    if (x[0] !== 'ALL') { var s = el('span', 'sw'); s.style.background = color(x[0]); b.append(s); }
+    b.append(document.createTextNode(x[1]));
+    b.addEventListener('click', function(){ FILTER = x[0]; draw(); });
+    f.append(b);
+  });
+  var tg = el('label', 'toggle'); var cb = el('input'); cb.type = 'checkbox'; cb.id = 'showX'; cb.checked = SHOW_X;
+  cb.addEventListener('change', function(){ SHOW_X = cb.checked; draw(); });
+  tg.append(cb, document.createTextNode('제외한 응답도 집계에 넣기')); f.append(tg);
+
+  // 국가별 목표
+  var q = $('pQuota'); q.replaceChildren();
+  $('quotaNote').textContent = '목표: 4개국 각 ' + TARGET + '명. 그보다 적으면 국가 간 비교는 참고용입니다.';
+  var qmax = Math.max.apply(null, CC.map(function(c){ return valid.filter(function(r){ return r.q1 === c; }).length; }).concat([TARGET]));
+  CC.forEach(function(c){
+    var n = valid.filter(function(r){ return r.q1 === c; }).length;
+    var row = el('div', 'bar'); var lab = el('div', 'bar-l', L.q1[c]);
+    if (c !== 'ETC' && n < TARGET) lab.append(el('span', 'tag', '참고용'));
+    var tr = el('div', 'bar-t'); var s = el('span'); s.style.width = (n / qmax * 100) + '%'; s.style.background = color(c); tr.append(s);
+    if (c !== 'ETC') { var m = el('i', 'mark'); m.style.left = (TARGET / qmax * 100) + '%'; tr.append(m); }
+    var v = el('div', 'bar-v num'); v.append(el('b', null, String(n)), document.createTextNode(c === 'ETC' ? '명' : ' / ' + TARGET + '명'));
+    row.append(lab, tr, v); q.append(row);
+  });
+
+  // 날짜별
+  var dd = $('pDays'); dd.replaceChildren();
+  var byDay = {}; rows.forEach(function(r){ var d = r.submitted_at.slice(0, 10); if (d) byDay[d] = (byDay[d] || 0) + 1; });
+  var days = Object.keys(byDay).sort();
+  if (!days.length) dd.append(el('p', 'empty', '아직 응답이 없습니다.'));
+  else {
+    var cur = new Date(days[0] + 'T00:00:00Z'), end = new Date(days[days.length - 1] + 'T00:00:00Z'), seq = [];
+    while (cur <= end && seq.length < 60) { seq.push(cur.toISOString().slice(0, 10)); cur = new Date(cur.getTime() + 86400000); }
+    var dmax = Math.max.apply(null, seq.map(function(d){ return byDay[d] || 0; }));
+    seq.forEach(function(d){
+      var n = byDay[d] || 0, c = el('div', 'day');
+      var bar = el('i'); bar.style.height = (n / dmax * 100) + '%';
+      c.append(el('b', 'num', n ? String(n) : ''), bar, el('span', 'num', d.slice(5).replace('-', '/')));
+      dd.append(c);
+    });
+  }
+
+  // 문항별
+  var one = function(key){ return function(r){ return r[key] ? [[r[key], 1]] : []; }; };
+  bars($('pQ2'), Object.keys(L.q2), function(k){ return L.q2[k]; }, rows, one('q2'));
+  bars($('pQ3'), ['le2020','2021','2022','2023','2024','2025','2026'], function(k){ return L.q3[k]; }, rows, one('q3'));
+  bars($('pQ4'), ['plan','noplan','unsure','moved','direct'], function(k){ return L.q4[k]; }, rows, one('q4'));
+  bars($('pQ6'), Object.keys(L.q6), function(k){ return L.q6[k]; }, rows, one('q6'), {sort:true});
+  bars($('pQ5'), Object.keys(L.q5), function(k){ return L.q5[k]; }, rows, function(r){ var out = []; [r.q5_1, r.q5_2, r.q5_3].forEach(function(v, i){ if (v) out.push([v, 3 - i]); }); return out; }, {sort:true, weighted:true});
+  bars($('pQ7'), Object.keys(L.q7), function(k){ return L.q7[k]; }, rows, function(r){ return r._q7.map(function(v){ return [v, 1]; }); }, {sort:true});
+  bars($('pQ9'), Object.keys(L.q9), function(k){ return L.q9[k]; }, rows, one('q9'));
+  var sure = rows.map(function(r){ return r.q9_sure; }).filter(function(v){ return v !== null; });
+  $('sureNote').textContent = sure.length ? '계획의 확신 정도 평균 ' + Math.round(sure.reduce(function(a, b){ return a + b; }, 0) / sure.length) + '% (' + sure.length + '명)' : '';
+
+  // Q8 점 그림
+  var p8 = $('pQ8'); p8.replaceChildren();
+  if (!rows.length) p8.append(el('p', 'empty', '아직 응답이 없습니다.'));
+  else {
+    var box = el('div', 'dots');
+    Object.keys(L.q8).forEach(function(item){
+      var key = 'q8_' + item, row = el('div', 'dotrow'), tr = el('div', 'dot-t');
+      var vals = rows.map(function(r){ return r[key]; }).filter(function(v){ return v !== null; });
+      CC.forEach(function(c){
+        var cv = rows.filter(function(r){ return r.q1 === c && r[key] !== null; }).map(function(r){ return r[key]; });
+        if (!cv.length) return;
+        var m = cv.reduce(function(a, b){ return a + b; }, 0) / cv.length, d = el('i');
+        d.style.left = ((m - 1) / 4 * 100) + '%'; d.style.background = color(c); d.title = L.q1[c] + ' ' + fmt1(m) + ' (' + cv.length + '명)';
+        tr.append(d);
+      });
+      row.append(el('div', 'bar-l', L.q8[item]), tr, el('div', 'bar-v num', vals.length ? fmt1(vals.reduce(function(a, b){ return a + b; }, 0) / vals.length) : '–'));
+      row.lastChild.style.minWidth = '0';
+      box.append(row);
+    });
+    var ax = el('div', 'axis'); var mid = el('div'); ['1', '2', '3', '4', '5'].forEach(function(n){ mid.append(el('span', 'num', n)); });
+    ax.append(el('span'), mid, el('span', null, '평균'));
+    p8.append(box, ax);
+  }
+
+  // Q10
+  var hist = $('pHist'); hist.replaceChildren();
+  var hc = []; for (var i = 0; i <= 10; i++) hc.push(rows.filter(function(r){ return r.q10 === i; }).length);
+  var hmax = Math.max.apply(null, hc.concat([1]));
+  hc.forEach(function(n, i){ var c = el('div'); var b = el('i'); b.style.height = (n / hmax * 100) + '%'; b.style.background = i <= 6 ? 'var(--coral)' : i <= 8 ? 'var(--sun)' : 'var(--accent)'; b.title = i + '점 ' + n + '명'; c.append(b, el('span', 'num', String(i))); hist.append(c); });
+  var np = $('pNps'); np.replaceChildren();
+  (FILTER === 'ALL' ? ['ALL'].concat(CC) : [FILTER]).forEach(function(c){
+    var rs = rows.filter(function(r){ return (c === 'ALL' || r.q1 === c) && r.q10 !== null; });
+    if (!rs.length) return;
+    var pro = rs.filter(function(r){ return r.q10 >= 9; }).length, det = rs.filter(function(r){ return r.q10 <= 6; }).length;
+    var nps = Math.round((pro - det) / rs.length * 100), mean = rs.reduce(function(a, r){ return a + r.q10; }, 0) / rs.length;
+    var row = el('div', 'bar'), tr = el('div', 'bar-t'), s = el('span');
+    s.style.position = 'absolute'; s.style.top = '0'; s.style.bottom = '0'; s.style.width = (Math.abs(nps) / 2) + '%';
+    if (nps >= 0) s.style.left = '50%'; else s.style.right = '50%';
+    s.style.background = c === 'ALL' ? 'var(--ink)' : color(c);
+    var m = el('i', 'mark'); m.style.left = '50%';
+    tr.append(s, m);
+    var v = el('div', 'bar-v num'); v.append(el('b', null, (nps > 0 ? '+' : '') + nps), document.createTextNode(' · 평균 ' + fmt1(mean) + ' · ' + rs.length + '명'));
+    row.append(el('div', 'bar-l', c === 'ALL' ? '전체' : L.q1[c]), tr, v); np.append(row);
+  });
+  if (!np.children.length) np.append(el('p', 'empty', '아직 응답이 없습니다.'));
+
+  // 주관식
+  function quotes(host, key, metaOf){
+    host.replaceChildren();
+    var items = rows.filter(function(r){ return r[key]; });
+    if (!items.length) { host.append(el('p', 'empty', '아직 주관식 응답이 없습니다.')); return; }
+    items.slice(-80).reverse().forEach(function(r){ var li = el('li', null, String(r[key])); li.style.borderLeftColor = color(r.q1); li.append(el('small', null, metaOf(r))); host.append(li); });
+  }
+  quotes($('pWhy7'), 'q7_why', function(r){ return L.q1[r.q1] + ' · 고민한 나라: ' + r._q7.map(function(k){ return L.q7[k] || k; }).join(', '); });
+  quotes($('pWhy10'), 'q10_why', function(r){ return L.q1[r.q1] + ' · 추천 ' + r.q10 + '점'; });
+
+  // 표
+  var tb = $('tbody'); tb.replaceChildren();
+  ROWS.filter(function(r){ return FILTER === 'ALL' || r.q1 === FILTER; }).slice(-300).reverse().forEach(function(r){
+    var tr = el('tr', r.excluded ? 'x' : '');
+    var c1 = el('td'); var sw = el('span', 'sw'); sw.style.background = color(r.q1); sw.style.marginRight = '6px'; c1.append(sw, document.createTextNode(L.q1[r.q1] + (r.q1_other ? ' (' + r.q1_other + ')' : '')));
+    var fl = el('td'); r._flags.forEach(function(k){ fl.append(el('span', 'flag', L.flag[k] || k)); });
+    var act = el('td'); var b = el('button', 'linkbtn', r.excluded ? '되돌리기' : '제외'); b.type = 'button';
+    b.addEventListener('click', function(){ toggleExclude(r); }); act.append(b);
+    tr.append(el('td', 'num', r.submitted_at.replace('T', ' ').slice(5, 16)), c1, el('td', null, L.q2[r.q2] || r.q2), el('td', 'num', L.q3[r.q3] || r.q3),
+      el('td', 'num', r.duration_sec === null ? '–' : r.duration_sec + '초'), el('td', 'num', r.q10 === null ? '–' : String(r.q10)), el('td', null, r.lang), el('td', null, r.src || '–'), fl, act);
+    tb.append(tr);
+  });
+  if (!tb.children.length) { var e = el('tr'); var td = el('td', 'muted', '아직 응답이 없습니다. 설문 링크를 공유하면 이곳에 표시됩니다.'); td.colSpan = 10; e.append(td); tb.append(e); }
+
+  var lg = $('legend'); lg.replaceChildren();
+  CC.forEach(function(c){ var li = el('li'); var s = el('span', 'sw'); s.style.background = color(c); li.append(s, document.createTextNode(L.q1[c])); lg.append(li); });
+  $('updated').textContent = '· ' + ROWS.length + '건 · ' + new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'}) + ' 기준';
+}
+
+/* ───────────── 동작 ───────────── */
+function show(which){ $('login').hidden = which !== 'login'; $('dash').hidden = which !== 'dash'; if (which !== 'dash') $('dash').style.display = 'none'; else $('dash').style.display = 'flex'; }
+function load(){
+  if (DEMO) { draw(); return Promise.resolve(); }
+  setBusy(true);
+  return api('admin_list').then(function(j){
+    setBusy(false);
+    if (!j.ok) { if (j.error === 'auth') logout('로그인 시간이 끝났습니다. 다시 들어가 주세요.'); else toast('불러오지 못했습니다. 잠시 뒤 새로고침해 주세요.'); return; }
+    ROWS = j.rows.map(norm); OPEN = j.open !== false; draw();
+  }).catch(function(){ setBusy(false); toast('서버에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요.'); });
+}
+function logout(msg){ TOKEN = null; sstore('wk_admin', null); clearInterval(timer); ROWS = []; DEMO = false; show('login'); $('loginErr').textContent = msg || ''; }
+function toggleExclude(r){
+  var next = !r.excluded;
+  if (DEMO) { r.excluded = next; draw(); return; }
+  api('admin_exclude', {id:r.id, excluded:next}).then(function(j){ if (j.ok) { r.excluded = next; draw(); } else if (j.error === 'auth') logout('로그인 시간이 끝났습니다. 다시 들어가 주세요.'); else toast('바꾸지 못했습니다.'); }).catch(function(){ toast('서버에 연결하지 못했습니다.'); });
+}
+function csv(){
+  var esc = function(v){ v = v === null || v === undefined ? '' : String(v); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  var lines = [EXPORT_COLS.join(',')].concat(ROWS.map(function(r){ return EXPORT_COLS.map(function(c){ return esc(c === 'excluded' ? (r.excluded ? '1' : '') : r[c]); }).join(','); }));
+  var blob = new Blob(['﻿' + lines.join('\r\n')], {type:'text/csv;charset=utf-8'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'why-korea-responses_' + new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10) + '.csv';
+  document.body.append(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  toast('CSV 파일을 내려받았습니다 (' + ROWS.length + '건).');
+}
+
+$('loginForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  var pw = $('pw').value; if (!pw) return;
+  $('loginBtn').disabled = true; $('loginErr').textContent = '';
+  api('admin_login', {password:pw}).then(function(j){
+    $('loginBtn').disabled = false;
+    if (j.ok) { TOKEN = j.token; sstore('wk_admin', TOKEN); $('pw').value = ''; start(); return; }
+    $('loginErr').textContent = j.error === 'bad_password' ? '비밀번호가 맞지 않습니다. 남은 시도 ' + j.left + '회.'
+      : j.error === 'locked' ? '여러 번 틀려 잠겼습니다. ' + j.minutes + '분 뒤에 다시 시도해 주세요.'
+      : j.error === 'no_password_set' ? '비밀번호가 아직 등록되지 않았습니다. Apps Script의 스크립트 속성에 ADMIN_PASSWORD를 추가하세요.'
+      : '들어가지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
+  }).catch(function(){ $('loginBtn').disabled = false; $('loginErr').textContent = '서버에 연결하지 못했습니다. config.js의 API_URL과 인터넷 연결을 확인해 주세요.'; });
+});
+$('demoBtn').addEventListener('click', function(){ DEMO = true; ROWS = demoRows().map(norm); OPEN = true; show('dash'); setBusy(false); draw(); });
+$('btnRefresh').addEventListener('click', function(){ toast(''); load(); });
+$('btnLogout').addEventListener('click', function(){ logout(''); });
+$('btnCsv').addEventListener('click', csv);
+$('btnOpen').addEventListener('click', function(){
+  setBusy(true);
+  api('admin_set_open', {open:!OPEN}).then(function(j){ setBusy(false); if (j.ok) { OPEN = j.open; draw(); toast(OPEN ? '설문을 다시 열었습니다.' : '설문을 닫았습니다. 새 응답을 받지 않습니다.'); } else if (j.error === 'auth') logout('로그인 시간이 끝났습니다. 다시 들어가 주세요.'); }).catch(function(){ setBusy(false); toast('서버에 연결하지 못했습니다.'); });
+});
+$('btnBackup').addEventListener('click', function(){
+  setBusy(true); toast('백업하는 중…');
+  api('admin_backup').then(function(j){ setBusy(false); toast(j.ok ? 'Google Drive에 백업했습니다: ' + j.name : '백업하지 못했습니다. Apps Script에서 setup을 먼저 실행했는지 확인해 주세요.'); }).catch(function(){ setBusy(false); toast('서버에 연결하지 못했습니다.'); });
+});
+
+function start(){
+  show('dash'); setBusy(false); draw();
+  load();
+  clearInterval(timer);
+  timer = setInterval(function(){ if (!document.hidden && TOKEN) load(); }, 60000);
+}
+
+if (PREVIEW) {
+  $('loginForm').hidden = true; $('demoBtn').hidden = false;
+  $('loginLead').textContent = '미리보기 모드입니다. 아직 서버(API_URL)가 연결되지 않아 예시 데이터로 화면만 확인할 수 있습니다.';
+  show('login');
+} else {
+  TOKEN = sstore('wk_admin') || null;
+  if (TOKEN) start(); else show('login');
+}
+})();
+</script>
+</body>
+</html>

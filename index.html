@@ -1,0 +1,930 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>왜 한국이었나요?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: one calm column. A dashed flight path across the top carries a small plane from 출발 to 도착, one question per leg. */
+:root{
+  --bg:#EEF7FA; --bg-2:#DDEFF5; --surface:#FFFFFF; --ink:#14313D; --muted:#58737F; --line:#D3E4EA;
+  --accent:#12957E; --accent-ink:#0B6B5A; --accent-soft:#DDF4EE; --on-accent:#FFFFFF;
+  --sun:#F4B63F; --sun-soft:#FFF2D2; --on-sun:#3A2A05; --coral:#E3644F; --coral-soft:#FDE9E5;
+  --c-VN:#d94841; --c-CN:#d9871c; --c-MN:#3576d6; --c-NP:#8b5bd6; --c-ETC:#7b8f98;
+  --shadow:0 8px 28px rgba(20,49,61,.08);
+  --font-body:'Be Vietnam Pro','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+  --font-display:'Gowun Dodum','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1D24; --bg-2:#13303A; --surface:#172C36; --ink:#E7F2F5; --muted:#9AB3BD; --line:#2B4653;
+  --accent:#3CC9AF; --accent-ink:#7FE0CD; --accent-soft:#16393A; --on-accent:#06231D;
+  --sun:#F4B63F; --sun-soft:#3A2F14; --on-sun:#3A2A05; --coral:#F08878; --coral-soft:#3B211D;
+  --c-VN:#ef6a62; --c-CN:#eda03c; --c-MN:#5b97ee; --c-NP:#a583ea; --c-ETC:#9fb2ba;
+  --shadow:0 8px 28px rgba(0,0,0,.35); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0E1D24; --bg-2:#13303A; --surface:#172C36; --ink:#E7F2F5; --muted:#9AB3BD; --line:#2B4653;
+  --accent:#3CC9AF; --accent-ink:#7FE0CD; --accent-soft:#16393A; --on-accent:#06231D;
+  --sun:#F4B63F; --sun-soft:#3A2F14; --on-sun:#3A2A05; --coral:#F08878; --coral-soft:#3B211D;
+  --c-VN:#ef6a62; --c-CN:#eda03c; --c-MN:#5b97ee; --c-NP:#a583ea; --c-ETC:#9fb2ba;
+  --shadow:0 8px 28px rgba(0,0,0,.35); color-scheme:dark }
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:radial-gradient(900px 360px at 50% -80px,var(--bg-2),transparent 70%),var(--bg);background-attachment:fixed;color:var(--ink);
+  font-family:var(--font-body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+
+.app{min-height:100%;max-width:660px;margin:0 auto;display:flex;flex-direction:column;gap:14px;
+  padding-block:14px 0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.app:lang(en),.app:lang(vi){--font-display:'Be Vietnam Pro',system-ui,sans-serif}
+.app:lang(zh){--font-display:'PingFang SC','Microsoft YaHei','Noto Sans SC',system-ui,sans-serif}
+
+.ribbon{background:var(--sun-soft);color:var(--ink);border:1px dashed var(--sun);border-radius:12px;padding:8px 12px;font-size:13px;text-align:center}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:17px;color:var(--ink);min-width:0}
+.brand svg{flex:none;color:var(--accent)}
+.langs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.langs button{border:0;background:transparent;border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;min-height:32px}
+.langs button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+
+/* flight path */
+.route{display:flex;flex-direction:column;gap:2px}
+.route svg{display:block;width:100%;height:auto;overflow:visible}
+.route .track{fill:none;stroke:var(--line);stroke-width:2.5;stroke-dasharray:1 9;stroke-linecap:round}
+.route .prog{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round}
+.route .wp{fill:var(--surface);stroke:var(--line);stroke-width:2}
+.route .wp.done{fill:var(--accent);stroke:var(--accent)}
+.route .wp.cur{fill:var(--sun);stroke:var(--sun)}
+.route .end{fill:var(--ink)}
+.route .plane{fill:var(--accent);stroke:var(--surface);stroke-width:1.5;stroke-linejoin:round}
+.route-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);letter-spacing:.04em}
+.route-meta b{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600;letter-spacing:0}
+
+/* card */
+.stage{flex:1;display:flex;flex-direction:column}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:26px 24px;display:flex;flex-direction:column;gap:16px}
+@media (max-width:480px){.card{padding:22px 16px;border-radius:20px}}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--accent-ink);font-variant-numeric:tabular-nums}
+.card h1,.card h2{font-family:var(--font-display);font-weight:400;margin:0;line-height:1.35;text-wrap:balance;word-break:keep-all;outline:none}
+.card h1{font-size:clamp(26px,6.4vw,34px)}
+.card h2{font-size:clamp(21px,5vw,26px)}
+.app:lang(en) .card h1,.app:lang(vi) .card h1,.app:lang(en) .card h2,.app:lang(vi) .card h2{font-weight:600;letter-spacing:-.01em;line-height:1.25}
+.app:lang(zh) .card h1,.app:lang(zh) .card h2{font-weight:600}
+.hint{margin:0;color:var(--muted);font-size:14.5px}
+.mini{margin:0;color:var(--muted);font-size:13px}
+.lead{margin:0;font-size:16px;max-width:60ch}
+
+/* intro */
+.facts{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
+.facts li{background:var(--accent-soft);color:var(--accent-ink);border-radius:999px;padding:5px 13px;font-size:13.5px;font-weight:600}
+.notice{border-left:3px solid var(--sun);padding:2px 0 2px 14px;display:flex;flex-direction:column;gap:6px}
+.notice p{margin:0;font-size:14px;color:var(--muted)}
+.check{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1.5px solid var(--line);border-radius:14px;cursor:pointer;font-size:15px}
+.check input{appearance:none;-webkit-appearance:none;flex:none;width:24px;height:24px;margin:1px 0 0;border:2px solid var(--line);border-radius:7px;background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.check input:checked{background:var(--accent);border-color:var(--accent)}
+.check input:checked::after{content:"";width:11px;height:6px;border-left:2.5px solid var(--on-accent);border-bottom:2.5px solid var(--on-accent);transform:rotate(-45deg) translate(1px,-1px)}
+.check:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+
+/* options */
+.opts{display:grid;gap:10px}
+.opts.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:420px){.opts.grid2{grid-template-columns:1fr}}
+.opt{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;text-align:left;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);
+  background:var(--surface);font-weight:500;cursor:pointer;transition:border-color .15s,background-color .15s,transform .12s,opacity .15s;min-width:0}
+.opt:hover{border-color:var(--accent)}
+.opt:active{transform:scale(.985)}
+.opt-t{flex:1;min-width:0;overflow-wrap:anywhere}
+.opt[aria-checked="true"],.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.opt .dot{flex:none;width:12px;height:12px;border-radius:4px}
+.opt .tick{flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center}
+.opt[aria-checked="true"] .tick{background:var(--accent);border-color:var(--accent)}
+.opt[aria-checked="true"] .tick::after{content:"";width:10px;height:5px;border-left:2px solid var(--on-accent);border-bottom:2px solid var(--on-accent);transform:rotate(-45deg) translate(1px,-1px)}
+.opt .badge{flex:none;min-width:50px;height:28px;padding:0 8px;border-radius:999px;border:1.5px dashed var(--line);display:grid;place-items:center;font-size:12.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.opt[aria-pressed="true"] .badge{background:var(--sun);border:1.5px solid var(--sun);color:var(--on-sun)}
+.opt.dim{opacity:.5}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-weight:500;cursor:pointer;transition:border-color .15s,background-color .15s}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.sub{display:flex;flex-direction:column;gap:12px;padding-top:4px}
+.sub-label{margin:0;font-size:14.5px;font-weight:600}
+.sub-label small{font-weight:400;color:var(--muted);font-size:13px}
+.field{width:100%;min-height:48px;padding:11px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface)}
+textarea.field{min-height:76px;resize:vertical;line-height:1.5}
+.field:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.field::placeholder{color:var(--muted);opacity:.75}
+
+/* timeline (q3) */
+.year-read{font-family:var(--font-display);font-size:46px;line-height:1;color:var(--accent-ink);font-variant-numeric:tabular-nums;min-height:46px}
+.year-read.empty{color:var(--line)}
+.tl{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));position:relative}
+.tl::before{content:"";position:absolute;left:calc(100%/14);right:calc(100%/14);top:20px;height:3px;border-radius:3px;background:var(--line)}
+.tl-fill{position:absolute;left:calc(100%/14);top:20px;height:3px;border-radius:3px;background:var(--accent);width:0;transition:width .3s ease}
+.tl button{position:relative;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0 4px;cursor:pointer;color:var(--muted);min-width:0}
+.tl i{width:26px;height:26px;border-radius:50%;background:var(--surface);border:3px solid var(--line);transition:transform .18s,background-color .18s,border-color .18s,box-shadow .18s}
+.tl button.past i{border-color:var(--accent)}
+.tl button[aria-checked="true"] i{background:var(--accent);border-color:var(--accent);transform:scale(1.18);box-shadow:0 0 0 6px var(--accent-soft)}
+.tl span{font-size:12px;font-variant-numeric:tabular-nums;text-align:center;line-height:1.25}
+.tl button[aria-checked="true"] span{color:var(--ink);font-weight:700}
+
+/* sliders */
+.sls{display:flex;flex-direction:column;gap:18px}
+.sl{display:flex;flex-direction:column;gap:4px}
+.sl-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sl-name{font-weight:600;font-size:15px}
+.sl-val{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sl-val.set{color:var(--ink);font-weight:600}
+.rng{-webkit-appearance:none;appearance:none;width:100%;height:34px;margin:0;background:transparent;cursor:pointer;--p:50%;--fill:var(--accent)}
+.rng::-webkit-slider-runnable-track{height:8px;border-radius:99px;background:linear-gradient(to right,var(--fill) var(--p),var(--line) var(--p))}
+.rng::-moz-range-track{height:8px;border-radius:99px;background:var(--line)}
+.rng::-moz-range-progress{height:8px;border-radius:99px;background:var(--fill)}
+.rng::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-10px;border-radius:50%;background:var(--surface);border:4px solid var(--fill);box-shadow:0 2px 6px rgba(20,49,61,.25);transition:transform .12s}
+.rng::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--surface);border:4px solid var(--fill);box-shadow:0 2px 6px rgba(20,49,61,.25)}
+.rng:active::-webkit-slider-thumb{transform:scale(1.12)}
+.rng.untouched{--fill:var(--muted)}
+.rng.untouched::-webkit-slider-runnable-track{background:var(--line)}
+.rng.untouched::-moz-range-progress{background:var(--line)}
+.rng.untouched::-webkit-slider-thumb{border-style:dashed;opacity:.75}
+.scale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;padding:0 9px}
+.nps-read{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.nps-num{font-family:var(--font-display);font-size:64px;line-height:1;font-variant-numeric:tabular-nums;color:var(--line);min-width:1.2ch}
+.nps-num.set{color:var(--ink)}
+.nps-word{font-size:15px;font-weight:600;color:var(--muted)}
+
+/* nav */
+.nav{position:sticky;bottom:0;display:flex;flex-direction:column;gap:6px;padding-block:10px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--bg) 72%,transparent)}
+.nav-hint{min-height:20px;margin:0;font-size:13px;color:var(--muted);text-align:center}
+.nav-hint.warn{color:var(--coral);font-weight:600}
+.nav-row{display:flex;gap:10px}
+.btn{min-height:50px;padding:0 20px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;cursor:pointer;transition:transform .12s,opacity .15s,background-color .15s}
+.btn:active{transform:scale(.98)}
+.btn.primary{flex:1;background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn[aria-disabled="true"]{opacity:.45}
+.btn.wide{width:100%}
+
+/* done */
+.done{align-items:center;text-align:center;padding-block:34px}
+.stamp{width:150px;height:150px;color:var(--accent)}
+.stamp text{font-family:var(--font-body);font-weight:700;fill:currentColor}
+.alert{background:var(--coral-soft);border:1px solid var(--coral);border-radius:12px;padding:10px 14px;font-size:14px;margin:0}
+
+.foot{font-size:12px;color:var(--muted);text-align:center;padding-bottom:10px}
+
+@media (prefers-reduced-motion: no-preference){
+  .card.enter{animation:enter .32s cubic-bezier(.2,.7,.2,1) both}
+  .card.enter.rev{animation-name:enterRev}
+  .pop{animation:pop .28s ease}
+  .shake{animation:shake .3s ease}
+  .stamp{animation:stamp .5s cubic-bezier(.2,1.4,.4,1) both}
+}
+@keyframes enter{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes enterRev{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes pop{40%{transform:scale(1.035)}}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes stamp{from{opacity:0;transform:scale(1.7) rotate(-22deg)}to{opacity:1;transform:rotate(-8deg)}}
+.stamp{transform:rotate(-8deg)}
+</style>
+</head>
+<body>
+<div class="app" id="app" lang="ko">
+  <div class="ribbon" id="ribbon" hidden></div>
+
+  <header class="top">
+    <div class="brand">
+      <svg width="20" height="20" viewBox="-12 -10 24 20" aria-hidden="true"><path d="M-10 -7 L11 0 L-10 7 L-5 0 Z" fill="currentColor"/></svg>
+      <span id="brand"></span>
+    </div>
+    <div class="langs" id="langs" role="group" aria-label="Language">
+      <button type="button" data-lang="ko">한국어</button>
+      <button type="button" data-lang="en">EN</button>
+      <button type="button" data-lang="vi">VI</button>
+      <button type="button" data-lang="zh">中文</button>
+    </div>
+  </header>
+
+  <div class="route" id="route" hidden>
+    <svg viewBox="0 0 600 62" aria-hidden="true">
+      <path class="track" d="M16 48 Q300 -12 584 48"/>
+      <path class="prog" id="routeProg" d="M16 48"/>
+      <g id="routeDots"></g>
+      <circle class="end" cx="16" cy="48" r="5"/><circle class="end" cx="584" cy="48" r="5"/>
+      <path class="plane" id="plane" d="M-10 -7 L11 0 L-10 7 L-5 0 Z"/>
+    </svg>
+    <div class="route-meta"><span id="rDep"></span><b id="rCount"></b><span id="rArr"></span></div>
+  </div>
+
+  <main class="stage" id="stage"></main>
+
+  <nav class="nav" id="nav" hidden>
+    <p class="nav-hint" id="navHint" role="status"></p>
+    <div class="nav-row">
+      <button type="button" class="btn" id="btnBack"></button>
+      <button type="button" class="btn primary" id="btnNext"></button>
+    </div>
+  </nav>
+
+  <footer class="foot" id="foot"></footer>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ───────────── 설정 · 저장 ───────────── */
+var CFG = Object.assign({API_URL:'',ORGANIZER:'',CONTACT:'',SHARE_URL:''}, window.SURVEY_CONFIG||{});
+var PREVIEW = !CFG.API_URL;
+var LS = {
+  get:function(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } },
+  set:function(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+  del:function(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+var LANGS = ['ko','en','vi','zh'];
+var NQ = 10;
+
+/* ───────────── 문구 (응답 값은 언어와 무관한 코드로 저장) ───────────── */
+var I18N = {
+ko:{
+  brand:'왜 한국이었나요?', tagline:'외국인 유학생 3분 설문',
+  intro_title:'한국에 온 이유를 들려주세요',
+  intro_lead:'통계는 유학생이 얼마나 늘었는지 알려 주지만, 왜 한국을 골랐는지는 알려 주지 않습니다. 그래서 여러분에게 직접 묻습니다.',
+  facts:['약 3분','10문항','완전 익명'],
+  who:'대상: 지금 한국에서 공부하고 있는 외국인 유학생 (어학연수·학부·대학원·교환학생)',
+  privacy:'이름, 학교, 연락처는 묻지 않습니다. 응답은 수업 과제의 통계 분석에만 쓰입니다.',
+  consent1:'저는 지금 한국에서 공부하고 있는 외국인 유학생입니다.',
+  consent2:'익명 응답이 과제용 통계에 쓰이는 것에 동의합니다.',
+  need_consent:'두 항목에 모두 체크해 주세요.',
+  start:'출발하기', resume:'이어서 답하기',
+  back:'이전', next:'다음', submit:'제출하기',
+  need_pick:'하나를 골라 주세요.', need_text:'내용을 적어 주세요.', need_rank:'가장 중요한 이유부터 차례로 눌러 주세요.',
+  need_sliders:'모든 항목의 막대를 움직여 주세요.', need_slider:'막대를 움직여 주세요.', need_multi:'하나 이상 골라 주세요.',
+  depart:'출발', arrive:'도착', other_ph:'직접 적어 주세요', optional:'선택',
+  sending:'보내는 중…', send_fail:'전송하지 못했습니다. 인터넷 연결을 확인한 뒤 다시 보내 주세요. 답변은 이 기기에 그대로 남아 있습니다.', retry:'다시 보내기',
+  done_title:'도착! 고맙습니다', done_lead:'응답이 저장되었습니다. 여러분의 이야기가 숫자에 이유를 더해 줍니다.',
+  share_lead:'주변의 유학생 친구에게도 전해 주세요.', copy:'설문 링크 복사', copied:'복사했습니다',
+  already_title:'이미 참여하셨습니다', already_lead:'한 사람당 한 번만 응답할 수 있습니다. 참여해 주셔서 고맙습니다.',
+  closed_title:'설문이 마감되었습니다', closed_lead:'참여해 주신 모든 분께 감사드립니다.',
+  preview:'미리보기 모드입니다. 응답은 저장되지 않습니다.', preview_done:'미리보기에서는 응답이 저장되지 않았습니다.', restart:'처음부터 다시 보기',
+  rank:['1순위','2순위','3순위'], rank_max:'최대 3개까지 고를 수 있습니다.',
+  untouched:'막대를 움직여 주세요',
+  sat:['','매우 불만족','불만족','보통','만족','매우 만족'],
+  sure:['아직 막연해요','어느 정도 정했어요','거의 확실해요'],
+  nps:['추천하기 어려워요','상황에 따라 추천해요','적극 추천해요'],
+  organizer:'조사', contact:'문의',
+  q:{
+    q1:{t:'어느 나라에서 오셨나요?',h:'국적을 골라 주세요.',o:{VN:'베트남',CN:'중국',MN:'몽골',NP:'네팔',ETC:'그 외 나라'},oph:'나라 이름을 적어 주세요'},
+    q2:{t:'지금 어떤 과정으로 공부하고 있나요?',h:'현재 체류자격을 기준으로 골라 주세요.',o:{d4:'어학연수 (D-4)',d2_ba:'학부 (D-2)',d2_ma:'석사 (D-2)',d2_phd:'박사 (D-2)',exch:'교환·방문학생',other:'기타'}},
+    q3:{t:'한국에 처음 온 해는 언제인가요?',h:'공부하러 처음 입국한 해를 눌러 주세요.',le:'2020 이전',leShort:'~2020'},
+    q4:{d4:'어학연수를 마친 뒤 학위과정(D-2)에 진학할 계획인가요?',d2:'한국 유학을 어학연수(D-4)로 시작했나요?',etc:'앞으로 한국에서 학위과정(D-2)에 진학할 계획이 있나요?',
+        o:{plan:'진학할 계획이다',noplan:'진학할 계획이 없다',unsure:'아직 모르겠다',moved:'네, 어학연수로 시작해 학위과정으로 옮겼다',direct:'아니요, 처음부터 학위과정으로 왔다'}},
+    q5:{t:'한국 유학을 고른 이유를 중요한 순서대로 골라 주세요',h:'가장 큰 이유부터 차례로 눌러 주세요. 최대 3개.',
+        o:{cost:'학비·생활비가 다른 나라보다 저렴해서',schol:'장학금을 받을 수 있어서',job:'졸업 후 한국에서 취업할 기회',parttime:'공부하면서 아르바이트를 할 수 있어서',culture:'한국 문화·한류에 대한 관심',quality:'교육 수준이 높아서',network:'가족·친구가 이미 한국에 있어서',visa:'비자 받기가 다른 나라보다 쉬워서',other:'기타'}},
+    q6:{t:'한국 유학을 결정할 때 가장 큰 영향을 준 것은 무엇인가요?',h:'한 가지만 골라 주세요.',
+        o:{agency:'유학원',peers:'먼저 온 친구·가족',sns:'SNS·유튜브',univ:'대학 홍보·입학설명회',gov:'정부 장학 프로그램 (GKS 등)',school:'본국 학교·선생님의 추천',other:'기타'}},
+    q7:{t:'한국 말고 다른 나라도 진지하게 고민했나요?',g:{only:'한국만 생각했다',also:'다른 나라도 고민했다'},sub:'어느 나라였나요?',subNote:'여러 개 선택 가능',
+        o:{JP:'일본',US:'미국',AU:'호주',CN:'중국',EU:'유럽',TW:'대만',other:'기타'},why:'그래도 한국을 고른 결정적인 이유 한 가지는?',whyph:'예: 학비가 절반이었다'},
+    q8:{t:'지금 한국 유학 생활에 얼마나 만족하나요?',h:'항목마다 막대를 움직여 주세요. 1 = 매우 불만족, 5 = 매우 만족',
+        o:{study:'수업·학업',cost:'학비·생활비 부담',job:'아르바이트 기회',visa:'비자·체류 절차',korean:'한국어 적응',support:'학교의 유학생 지원'}},
+    q9:{t:'졸업(수료) 후에는 어떻게 할 계획인가요?',h:'',o:{kr_job:'한국에서 취업',kr_study:'한국에서 진학',home:'본국으로 귀국',third:'다른 나라로 이동',unsure:'아직 모르겠다',other:'기타'},sure:'이 계획은 얼마나 확실한가요?'},
+    q10:{t:'같은 나라 친구나 후배에게 한국 유학을 추천하시겠어요?',h:'0 = 전혀 추천하지 않음 · 10 = 적극 추천',why:['어떤 점이 아쉬웠나요?','한 가지가 달라진다면 더 추천할 수 있을까요?','무엇이 가장 좋았나요?']}
+  }
+},
+en:{
+  brand:'Why Korea?', tagline:'A 3-minute survey for international students',
+  intro_title:'Tell us why you came to Korea',
+  intro_lead:'Statistics show how many international students have come, but not why they chose Korea. So we are asking you directly.',
+  facts:['About 3 min','10 questions','Anonymous'],
+  who:'For international students studying in Korea right now (language course, undergraduate, graduate, exchange).',
+  privacy:'We do not ask for your name, school or contact details. Answers are used only for statistics in a class project.',
+  consent1:'I am an international student currently studying in Korea.',
+  consent2:'I agree that my anonymous answers may be used for class-project statistics.',
+  need_consent:'Please tick both boxes.',
+  start:'Take off', resume:'Continue where I left off',
+  back:'Back', next:'Next', submit:'Submit',
+  need_pick:'Please choose one.', need_text:'Please type your answer.', need_rank:'Tap your reasons, most important first.',
+  need_sliders:'Please move every slider.', need_slider:'Please move the slider.', need_multi:'Please choose at least one.',
+  depart:'Departure', arrive:'Arrival', other_ph:'Please specify', optional:'optional',
+  sending:'Sending…', send_fail:'Could not send. Check your connection and send again. Your answers are still saved on this device.', retry:'Send again',
+  done_title:'You have arrived. Thank you!', done_lead:'Your answers were saved. Your story adds the reasons behind the numbers.',
+  share_lead:'Please pass this on to other international students.', copy:'Copy survey link', copied:'Copied',
+  already_title:'You have already taken part', already_lead:'Each person can answer once. Thank you for joining.',
+  closed_title:'This survey is closed', closed_lead:'Thank you to everyone who took part.',
+  preview:'Preview mode. Answers are not saved.', preview_done:'Nothing was saved in preview mode.', restart:'Start over',
+  rank:['1st','2nd','3rd'], rank_max:'You can choose up to 3.',
+  untouched:'Move the slider',
+  sat:['','Very dissatisfied','Dissatisfied','Neutral','Satisfied','Very satisfied'],
+  sure:['Still vague','Fairly decided','Almost certain'],
+  nps:['Hard to recommend','Depends on the person','Strongly recommend'],
+  organizer:'Conducted by', contact:'Contact',
+  q:{
+    q1:{t:'Which country are you from?',h:'Choose your nationality.',o:{VN:'Vietnam',CN:'China',MN:'Mongolia',NP:'Nepal',ETC:'Another country'},oph:'Country name'},
+    q2:{t:'What are you studying in Korea right now?',h:'Choose based on your current visa status.',o:{d4:'Korean language course (D-4)',d2_ba:'Undergraduate (D-2)',d2_ma:"Master's (D-2)",d2_phd:'PhD (D-2)',exch:'Exchange / visiting student',other:'Other'}},
+    q3:{t:'In which year did you first come to Korea?',h:'Tap the year you first arrived to study.',le:'2020 or earlier',leShort:'≤2020'},
+    q4:{d4:'After your language course, do you plan to enter a degree program (D-2)?',d2:'Did you start your studies in Korea with a language course (D-4)?',etc:'Do you plan to enter a degree program (D-2) in Korea later?',
+        o:{plan:'Yes, I plan to',noplan:'No, I do not plan to',unsure:'Not sure yet',moved:'Yes, I started with a language course and moved to a degree',direct:'No, I came directly for a degree'}},
+    q5:{t:'Why did you choose Korea? Pick your reasons in order of importance',h:'Tap the most important reason first. Up to 3.',
+        o:{cost:'Tuition and living costs are lower than in other countries',schol:'I could get a scholarship',job:'A chance to work in Korea after graduating',parttime:'I can work part-time while studying',culture:'Interest in Korean culture / Hallyu',quality:'High quality of education',network:'Family or friends were already in Korea',visa:'The visa was easier to get than for other countries',other:'Other'}},
+    q6:{t:'What influenced your decision to study in Korea the most?',h:'Choose only one.',
+        o:{agency:'Study-abroad agency',peers:'Friends or family who came before me',sns:'Social media / YouTube',univ:'University promotion or admission fair',gov:'Government scholarship program (GKS etc.)',school:'Recommendation from my school or teacher back home',other:'Other'}},
+    q7:{t:'Did you seriously consider any country other than Korea?',g:{only:'I only considered Korea',also:'I considered other countries too'},sub:'Which ones?',subNote:'choose all that apply',
+        o:{JP:'Japan',US:'USA',AU:'Australia',CN:'China',EU:'Europe',TW:'Taiwan',other:'Other'},why:'What was the one thing that made you choose Korea in the end?',whyph:'e.g. Tuition was half the price'},
+    q8:{t:'How satisfied are you with your life as a student in Korea?',h:'Move the slider for each item. 1 = very dissatisfied, 5 = very satisfied',
+        o:{study:'Classes and study',cost:'Tuition and living costs',job:'Part-time job opportunities',visa:'Visa and immigration procedures',korean:'Adapting to the Korean language',support:"My school's support for international students"}},
+    q9:{t:'What do you plan to do after you finish your studies?',h:'',o:{kr_job:'Work in Korea',kr_study:'Continue studying in Korea',home:'Return to my home country',third:'Move to another country',unsure:'Not sure yet',other:'Other'},sure:'How certain is this plan?'},
+    q10:{t:'Would you recommend studying in Korea to friends or juniors from your country?',h:'0 = not at all · 10 = definitely',why:['What was disappointing?','What one change would make you recommend it more?','What was the best part?']}
+  }
+},
+vi:{
+  brand:'Vì sao lại là Hàn Quốc?', tagline:'Khảo sát 3 phút dành cho du học sinh',
+  intro_title:'Hãy kể lý do bạn đến Hàn Quốc',
+  intro_lead:'Số liệu thống kê cho biết du học sinh tăng bao nhiêu, nhưng không cho biết vì sao các bạn chọn Hàn Quốc. Vì vậy chúng mình muốn hỏi trực tiếp bạn.',
+  facts:['Khoảng 3 phút','10 câu hỏi','Ẩn danh'],
+  who:'Dành cho du học sinh nước ngoài đang học tại Hàn Quốc (học tiếng, đại học, sau đại học, trao đổi).',
+  privacy:'Khảo sát không hỏi tên, trường hay thông tin liên lạc. Câu trả lời chỉ dùng để thống kê cho bài tập môn học.',
+  consent1:'Tôi là du học sinh nước ngoài đang học tại Hàn Quốc.',
+  consent2:'Tôi đồng ý để câu trả lời ẩn danh được dùng cho thống kê của bài tập.',
+  need_consent:'Hãy đánh dấu cả hai ô.',
+  start:'Cất cánh', resume:'Trả lời tiếp',
+  back:'Quay lại', next:'Tiếp', submit:'Gửi',
+  need_pick:'Hãy chọn một đáp án.', need_text:'Hãy nhập nội dung.', need_rank:'Hãy bấm theo thứ tự, lý do quan trọng nhất trước.',
+  need_sliders:'Hãy kéo tất cả các thanh trượt.', need_slider:'Hãy kéo thanh trượt.', need_multi:'Hãy chọn ít nhất một.',
+  depart:'Khởi hành', arrive:'Đến nơi', other_ph:'Nhập cụ thể', optional:'không bắt buộc',
+  sending:'Đang gửi…', send_fail:'Chưa gửi được. Hãy kiểm tra kết nối mạng rồi gửi lại. Câu trả lời vẫn được lưu trên thiết bị này.', retry:'Gửi lại',
+  done_title:'Đã đến nơi. Cảm ơn bạn!', done_lead:'Câu trả lời đã được lưu. Câu chuyện của bạn giúp giải thích lý do đằng sau các con số.',
+  share_lead:'Hãy chia sẻ cho bạn bè du học sinh khác nhé.', copy:'Sao chép link khảo sát', copied:'Đã sao chép',
+  already_title:'Bạn đã tham gia rồi', already_lead:'Mỗi người chỉ trả lời một lần. Cảm ơn bạn đã tham gia.',
+  closed_title:'Khảo sát đã kết thúc', closed_lead:'Cảm ơn tất cả các bạn đã tham gia.',
+  preview:'Chế độ xem trước. Câu trả lời không được lưu.', preview_done:'Ở chế độ xem trước, câu trả lời không được lưu.', restart:'Xem lại từ đầu',
+  rank:['Thứ 1','Thứ 2','Thứ 3'], rank_max:'Chọn tối đa 3 lý do.',
+  untouched:'Hãy kéo thanh trượt',
+  sat:['','Rất không hài lòng','Không hài lòng','Bình thường','Hài lòng','Rất hài lòng'],
+  sure:['Còn mơ hồ','Khá chắc','Gần như chắc chắn'],
+  nps:['Khó giới thiệu','Tùy trường hợp','Rất muốn giới thiệu'],
+  organizer:'Thực hiện', contact:'Liên hệ',
+  q:{
+    q1:{t:'Bạn đến từ nước nào?',h:'Hãy chọn quốc tịch của bạn.',o:{VN:'Việt Nam',CN:'Trung Quốc',MN:'Mông Cổ',NP:'Nepal',ETC:'Nước khác'},oph:'Tên nước'},
+    q2:{t:'Hiện tại bạn đang học chương trình nào?',h:'Chọn theo loại visa hiện tại.',o:{d4:'Học tiếng Hàn (D-4)',d2_ba:'Đại học (D-2)',d2_ma:'Thạc sĩ (D-2)',d2_phd:'Tiến sĩ (D-2)',exch:'Sinh viên trao đổi',other:'Khác'}},
+    q3:{t:'Bạn sang Hàn Quốc lần đầu vào năm nào?',h:'Bấm vào năm bạn nhập cảnh lần đầu để học.',le:'2020 trở về trước',leShort:'≤2020'},
+    q4:{d4:'Sau khóa tiếng, bạn có định học lên chương trình cấp bằng (D-2) không?',d2:'Bạn có bắt đầu du học Hàn Quốc bằng khóa tiếng (D-4) không?',etc:'Sau này bạn có định học chương trình cấp bằng (D-2) tại Hàn Quốc không?',
+        o:{plan:'Có, tôi dự định học lên',noplan:'Không có dự định',unsure:'Chưa biết',moved:'Có, tôi học tiếng trước rồi chuyển lên chương trình cấp bằng',direct:'Không, tôi sang học thẳng chương trình cấp bằng'}},
+    q5:{t:'Vì sao bạn chọn du học Hàn Quốc? Hãy chọn theo thứ tự quan trọng',h:'Bấm lý do quan trọng nhất trước. Tối đa 3 lý do.',
+        o:{cost:'Học phí và sinh hoạt phí rẻ hơn các nước khác',schol:'Có thể nhận học bổng',job:'Cơ hội làm việc tại Hàn Quốc sau khi tốt nghiệp',parttime:'Có thể vừa học vừa làm thêm',culture:'Yêu thích văn hóa Hàn Quốc / Hallyu',quality:'Chất lượng giáo dục cao',network:'Gia đình, bạn bè đã ở Hàn Quốc',visa:'Xin visa dễ hơn các nước khác',other:'Khác'}},
+    q6:{t:'Điều gì ảnh hưởng nhiều nhất đến quyết định du học Hàn Quốc của bạn?',h:'Chỉ chọn một.',
+        o:{agency:'Trung tâm tư vấn du học',peers:'Bạn bè, người thân đã sang trước',sns:'Mạng xã hội / YouTube',univ:'Quảng bá, hội thảo tuyển sinh của trường đại học',gov:'Chương trình học bổng chính phủ (GKS...)',school:'Trường hoặc thầy cô ở quê nhà giới thiệu',other:'Khác'}},
+    q7:{t:'Ngoài Hàn Quốc, bạn có cân nhắc nghiêm túc nước nào khác không?',g:{only:'Tôi chỉ nghĩ đến Hàn Quốc',also:'Tôi có cân nhắc nước khác'},sub:'Đó là những nước nào?',subNote:'có thể chọn nhiều',
+        o:{JP:'Nhật Bản',US:'Mỹ',AU:'Úc',CN:'Trung Quốc',EU:'Châu Âu',TW:'Đài Loan',other:'Khác'},why:'Lý do quyết định khiến bạn vẫn chọn Hàn Quốc là gì?',whyph:'Ví dụ: học phí chỉ bằng một nửa'},
+    q8:{t:'Bạn hài lòng đến mức nào với cuộc sống du học tại Hàn Quốc?',h:'Hãy kéo thanh trượt cho từng mục. 1 = rất không hài lòng, 5 = rất hài lòng',
+        o:{study:'Việc học trên lớp',cost:'Học phí và sinh hoạt phí',job:'Cơ hội làm thêm',visa:'Thủ tục visa, lưu trú',korean:'Thích nghi với tiếng Hàn',support:'Hỗ trợ của trường dành cho du học sinh'}},
+    q9:{t:'Sau khi học xong, bạn dự định làm gì?',h:'',o:{kr_job:'Làm việc tại Hàn Quốc',kr_study:'Học tiếp tại Hàn Quốc',home:'Về nước',third:'Sang nước khác',unsure:'Chưa biết',other:'Khác'},sure:'Bạn chắc chắn về kế hoạch này đến mức nào?'},
+    q10:{t:'Bạn có giới thiệu du học Hàn Quốc cho bạn bè, đàn em cùng nước không?',h:'0 = hoàn toàn không · 10 = chắc chắn có',why:['Điều gì khiến bạn chưa hài lòng?','Nếu thay đổi một điều thì bạn sẽ giới thiệu nhiều hơn?','Điều gì bạn thích nhất?']}
+  }
+},
+zh:{
+  brand:'为什么选择韩国?', tagline:'外国留学生3分钟问卷',
+  intro_title:'请告诉我们你来韩国的理由',
+  intro_lead:'统计数据能说明留学生增加了多少,却说明不了大家为什么选择韩国。所以我们想直接问问你。',
+  facts:['约3分钟','10道题','完全匿名'],
+  who:'对象:目前在韩国学习的外国留学生(语言研修、本科、研究生、交换生)。',
+  privacy:'问卷不会询问姓名、学校或联系方式。回答仅用于课程作业的统计分析。',
+  consent1:'我是目前在韩国学习的外国留学生。',
+  consent2:'我同意将匿名回答用于课程作业的统计。',
+  need_consent:'请勾选两项。',
+  start:'出发', resume:'继续作答',
+  back:'上一步', next:'下一步', submit:'提交',
+  need_pick:'请选择一项。', need_text:'请填写内容。', need_rank:'请按重要程度依次点击。',
+  need_sliders:'请拖动每一个滑块。', need_slider:'请拖动滑块。', need_multi:'请至少选择一项。',
+  depart:'出发', arrive:'到达', other_ph:'请填写', optional:'选填',
+  sending:'正在发送…', send_fail:'发送失败。请检查网络后重新发送。你的回答仍保存在本设备上。', retry:'重新发送',
+  done_title:'到达!谢谢你', done_lead:'回答已保存。你的故事为数字补上了理由。',
+  share_lead:'也请转发给身边的留学生朋友。', copy:'复制问卷链接', copied:'已复制',
+  already_title:'你已经参与过了', already_lead:'每人只能回答一次。感谢你的参与。',
+  closed_title:'问卷已结束', closed_lead:'感谢所有参与的同学。',
+  preview:'预览模式,回答不会被保存。', preview_done:'预览模式下回答没有被保存。', restart:'从头再看',
+  rank:['第1','第2','第3'], rank_max:'最多选择3项。',
+  untouched:'请拖动滑块',
+  sat:['','非常不满意','不满意','一般','满意','非常满意'],
+  sure:['还不确定','基本确定','几乎确定'],
+  nps:['很难推荐','视情况推荐','非常推荐'],
+  organizer:'调查方', contact:'联系方式',
+  q:{
+    q1:{t:'你来自哪个国家?',h:'请选择国籍。',o:{VN:'越南',CN:'中国',MN:'蒙古',NP:'尼泊尔',ETC:'其他国家'},oph:'国家名称'},
+    q2:{t:'你现在在读什么课程?',h:'请按目前的签证类型选择。',o:{d4:'语言研修 (D-4)',d2_ba:'本科 (D-2)',d2_ma:'硕士 (D-2)',d2_phd:'博士 (D-2)',exch:'交换生/访问学生',other:'其他'}},
+    q3:{t:'你第一次来韩国是哪一年?',h:'请点击你为学习首次入境的年份。',le:'2020年及以前',leShort:'≤2020'},
+    q4:{d4:'语言研修结束后,你打算升入学位课程 (D-2) 吗?',d2:'你在韩国的留学是从语言研修 (D-4) 开始的吗?',etc:'今后你打算在韩国读学位课程 (D-2) 吗?',
+        o:{plan:'打算升学',noplan:'不打算',unsure:'还不知道',moved:'是的,先读语言研修,后来转入学位课程',direct:'不是,一开始就读学位课程'}},
+    q5:{t:'你为什么选择来韩国留学?请按重要程度依次选择',h:'先点最重要的理由,最多3项。',
+        o:{cost:'学费和生活费比其他国家便宜',schol:'可以拿到奖学金',job:'毕业后有机会在韩国就业',parttime:'可以边读书边打工',culture:'对韩国文化/韩流感兴趣',quality:'教育水平高',network:'家人或朋友已经在韩国',visa:'签证比其他国家容易办',other:'其他'}},
+    q6:{t:'决定来韩国留学时,什么对你影响最大?',h:'只选一项。',
+        o:{agency:'留学中介',peers:'先来的朋友或家人',sns:'社交媒体/YouTube',univ:'大学宣传/招生说明会',gov:'政府奖学金项目(GKS等)',school:'本国学校或老师的推荐',other:'其他'}},
+    q7:{t:'除了韩国,你认真考虑过其他国家或地区吗?',g:{only:'只考虑过韩国',also:'也考虑过其他地方'},sub:'是哪些国家或地区?',subNote:'可多选',
+        o:{JP:'日本',US:'美国',AU:'澳大利亚',CN:'中国',EU:'欧洲',TW:'台湾',other:'其他'},why:'最终让你选择韩国的决定性理由是什么?',whyph:'例如:学费只有一半'},
+    q8:{t:'你对现在的韩国留学生活满意吗?',h:'请拖动每一项的滑块。1 = 非常不满意,5 = 非常满意',
+        o:{study:'课程与学业',cost:'学费和生活费负担',job:'打工机会',visa:'签证与居留手续',korean:'韩语适应',support:'学校对留学生的支持'}},
+    q9:{t:'毕业(结业)后你有什么打算?',h:'',o:{kr_job:'在韩国就业',kr_study:'在韩国继续深造',home:'回国',third:'去其他国家',unsure:'还不知道',other:'其他'},sure:'这个计划有多确定?'},
+    q10:{t:'你会向同国的朋友或学弟学妹推荐来韩国留学吗?',h:'0 = 完全不推荐 · 10 = 非常推荐',why:['哪些地方让你觉得遗憾?','如果改变一点,你会更愿意推荐吗?','你最满意的是什么?']}
+  }
+}
+};
+
+/* ───────────── 상태 ───────────── */
+var S = LS.get('wk_state') || {};
+S.a = S.a || {};            // 답변
+S.order = S.order || {};    // 선택지 순서(응답자마다 섞음)
+if (typeof S.step !== 'number') S.step = -1;   // -1 소개, 0..9 문항, 10 완료
+S.elapsed = S.elapsed || 0;
+if (!S.cid) S.cid = 'c' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+if (!S.lang) { var nl = (navigator.language || 'ko').slice(0, 2).toLowerCase(); S.lang = LANGS.indexOf(nl) >= 0 ? nl : 'ko'; }
+if (S.src === undefined) {
+  var sp = ''; try { sp = new URLSearchParams(location.search).get('src') || ''; } catch (e) {}
+  S.src = sp.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 20);
+}
+var A = S.a;
+var view = 'flow';          // flow | sending | fail | done | already | closed
+var hp = '';
+
+function save(){ LS.set('wk_state', S); }
+function t(k){ return I18N[S.lang][k]; }
+function tq(id){ return I18N[S.lang].q[id]; }
+function $(sel){ return document.querySelector(sel); }
+
+function h(tag, attrs){
+  var el = document.createElement(tag);
+  if (attrs) Object.keys(attrs).forEach(function(k){
+    var v = attrs[k];
+    if (v === false || v === null || v === undefined) return;
+    if (k === 'class') el.className = v;
+    else if (v === true) el.setAttribute(k, '');
+    else el.setAttribute(k, v);
+  });
+  for (var i = 2; i < arguments.length; i++) {
+    var c = arguments[i];
+    if (c === null || c === undefined || c === false) continue;
+    el.append(c);
+  }
+  return el;
+}
+function fx(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); el.addEventListener('animationend', function(){ el.classList.remove(cls); }, {once:true}); }
+function shuffled(list){ var a = list.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
+function isNum(v){ return typeof v === 'number' && isFinite(v); }
+function txt(v){ return String(v || '').trim(); }
+
+/* ───────────── 입력 부품 ───────────── */
+function single(key, opts, labelOf, o){
+  o = o || {};
+  var wrap = h('div', {class:'opts ' + (o.cls || ''), role:'radiogroup'});
+  opts.forEach(function(code){
+    var b = h('button', {type:'button', class:'opt', role:'radio', 'aria-checked': String(A[key] === code), 'data-v': code});
+    if (o.dot) { var d = h('i', {class:'dot'}); d.style.background = o.dot(code); b.append(d); }
+    b.append(h('span', {class:'opt-t'}, labelOf(code)), h('span', {class:'tick', 'aria-hidden':'true'}));
+    b.addEventListener('click', function(){
+      A[key] = code;
+      wrap.querySelectorAll('.opt').forEach(function(x){ x.setAttribute('aria-checked', String(x === b)); });
+      fx(b, 'pop');
+      if (o.onChange) o.onChange(code);
+      save(); refreshNav();
+    });
+    wrap.append(b);
+  });
+  return wrap;
+}
+function multi(key, opts, labelOf, o){
+  o = o || {};
+  A[key] = Array.isArray(A[key]) ? A[key] : [];
+  var wrap = h('div', {class:'chips'});
+  opts.forEach(function(code){
+    var b = h('button', {type:'button', class:'chip', 'aria-pressed': String(A[key].indexOf(code) >= 0)}, labelOf(code));
+    b.addEventListener('click', function(){
+      var i = A[key].indexOf(code);
+      if (i >= 0) A[key].splice(i, 1); else { A[key].push(code); fx(b, 'pop'); }
+      b.setAttribute('aria-pressed', String(i < 0));
+      if (o.onChange) o.onChange(code, i < 0);
+      save(); refreshNav();
+    });
+    wrap.append(b);
+  });
+  return wrap;
+}
+function textField(key, ph, o){
+  o = o || {};
+  var inp = h(o.long ? 'textarea' : 'input', {id:'f_' + key, class:'field', maxlength: String(o.max || 60), placeholder: ph, autocomplete:'off', 'aria-label': o.label || ph});
+  if (!o.long) inp.setAttribute('type', 'text');
+  inp.value = A[key] || '';
+  inp.addEventListener('input', function(){ A[key] = inp.value; save(); refreshNav(); });
+  return inp;
+}
+function slider(key, o){
+  var has = isNum(A[key]);
+  var inp = h('input', {type:'range', id:'f_' + key, class:'rng' + (has ? '' : ' untouched'), min:String(o.min), max:String(o.max), step:String(o.step), 'aria-label': o.label});
+  inp.value = String(has ? A[key] : o.start);
+  function paint(){
+    var v = Number(inp.value);
+    inp.style.setProperty('--p', ((v - o.min) / (o.max - o.min) * 100) + '%');
+    if (isNum(A[key])) inp.style.setProperty('--fill', o.color(v));
+    o.paint(isNum(A[key]) ? v : null);
+  }
+  function commit(){
+    A[key] = Number(inp.value);
+    inp.classList.remove('untouched');
+    paint(); save(); refreshNav();
+  }
+  inp.addEventListener('input', commit);
+  inp.addEventListener('change', commit);
+  inp.addEventListener('pointerdown', function(){ setTimeout(commit, 0); });
+  inp.addEventListener('keydown', function(e){ if (/^(Arrow|Home|End|Page)/.test(e.key) || e.key === ' ' || e.key === 'Enter') setTimeout(commit, 0); });
+  paint();
+  return inp;
+}
+function toneColor(f){ return f < 0.4 ? 'var(--coral)' : f < 0.7 ? 'var(--sun)' : 'var(--accent)'; }
+
+/* ───────────── 문항 ───────────── */
+var QIDS = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10'];
+var YEARS = ['le2020','2021','2022','2023','2024','2025','2026'];
+var Q8 = ['study','cost','job','visa','korean','support'];
+
+function q4variant(){ return A.q2 === 'd4' ? 'd4' : /^d2_/.test(A.q2 || '') ? 'd2' : 'etc'; }
+function q4opts(){ return q4variant() === 'd2' ? ['moved','direct'] : ['plan','noplan','unsure']; }
+
+var TITLE = {
+  q4:function(){ return tq('q4')[q4variant()]; }
+};
+
+var RENDER = {
+  q1:function(c){
+    var other = textField('q1_other', tq('q1').oph);
+    other.hidden = A.q1 !== 'ETC';
+    c.append(single('q1', ['VN','CN','MN','NP','ETC'], function(k){ return tq('q1').o[k]; }, {cls:'grid2', dot:function(k){ return 'var(--c-' + k + ')'; },
+      onChange:function(v){ other.hidden = v !== 'ETC'; if (v === 'ETC') other.focus(); }}), other);
+  },
+  q2:function(c){
+    var other = textField('q2_other', t('other_ph'));
+    other.hidden = A.q2 !== 'other';
+    c.append(single('q2', ['d4','d2_ba','d2_ma','d2_phd','exch','other'], function(k){ return tq('q2').o[k]; }, {cls:'grid2',
+      onChange:function(v){ other.hidden = v !== 'other'; if (v === 'other') other.focus(); }}), other);
+  },
+  q3:function(c){
+    var read = h('div', {class:'year-read', 'aria-hidden':'true'});
+    var tl = h('div', {class:'tl', role:'radiogroup'});
+    var fill = h('div', {class:'tl-fill'});
+    tl.append(fill);
+    function sync(){
+      var idx = YEARS.indexOf(A.q3);
+      read.textContent = idx < 0 ? '----' : (A.q3 === 'le2020' ? tq('q3').leShort : A.q3);
+      read.classList.toggle('empty', idx < 0);
+      fill.style.width = idx <= 0 ? '0' : 'calc(' + idx + ' * 100% / 7)';
+      tl.querySelectorAll('button').forEach(function(b, i){ b.setAttribute('aria-checked', String(i === idx)); b.classList.toggle('past', idx >= 0 && i < idx); });
+    }
+    YEARS.forEach(function(y){
+      var b = h('button', {type:'button', role:'radio', 'aria-label': y === 'le2020' ? tq('q3').le : y}, h('i'), h('span', null, y === 'le2020' ? tq('q3').leShort : y));
+      b.addEventListener('click', function(){ A.q3 = y; sync(); save(); refreshNav(); });
+      tl.append(b);
+    });
+    c.append(read, tl);
+    sync();
+  },
+  q4:function(c){
+    var opts = q4opts();
+    if (opts.indexOf(A.q4) < 0) delete A.q4;
+    c.append(single('q4', opts, function(k){ return tq('q4').o[k]; }));
+  },
+  q5:function(c){
+    A.q5 = Array.isArray(A.q5) ? A.q5 : [];
+    var order = S.order.q5 || (S.order.q5 = shuffled(['cost','schol','job','parttime','culture','quality','network','visa']).concat(['other']));
+    var list = h('div', {class:'opts'});
+    var other = textField('q5_other', t('other_ph'));
+    function sync(){
+      list.querySelectorAll('.opt').forEach(function(b){
+        var i = A.q5.indexOf(b.getAttribute('data-v'));
+        b.setAttribute('aria-pressed', String(i >= 0));
+        b.querySelector('.badge').textContent = i >= 0 ? t('rank')[i] : '';
+        b.classList.toggle('dim', i < 0 && A.q5.length >= 3);
+      });
+      other.hidden = A.q5.indexOf('other') < 0;
+    }
+    order.forEach(function(code){
+      var b = h('button', {type:'button', class:'opt', 'data-v': code, 'aria-pressed':'false'}, h('span', {class:'badge'}), h('span', {class:'opt-t'}, tq('q5').o[code]));
+      b.addEventListener('click', function(){
+        var i = A.q5.indexOf(code);
+        if (i >= 0) A.q5.splice(i, 1);
+        else if (A.q5.length < 3) { A.q5.push(code); fx(b, 'pop'); }
+        else { fx(b, 'shake'); flash(t('rank_max')); return; }
+        sync(); save(); refreshNav();
+        if (code === 'other' && i < 0) other.focus();
+      });
+      list.append(b);
+    });
+    c.append(list, other);
+    sync();
+  },
+  q6:function(c){
+    var order = S.order.q6 || (S.order.q6 = shuffled(['agency','peers','sns','univ','gov','school']).concat(['other']));
+    var other = textField('q6_other', t('other_ph'));
+    other.hidden = A.q6 !== 'other';
+    c.append(single('q6', order, function(k){ return tq('q6').o[k]; }, {onChange:function(v){ other.hidden = v !== 'other'; if (v === 'other') other.focus(); }}), other);
+  },
+  q7:function(c){
+    var q = tq('q7');
+    var sub = h('div', {class:'sub'});
+    var other = textField('q7_other', t('other_ph'));
+    var countries = ['JP','US','AU','CN','EU','TW','other'].filter(function(k){ return !(k === 'CN' && A.q1 === 'CN'); });
+    if (Array.isArray(A.q7)) A.q7 = A.q7.filter(function(k){ return countries.indexOf(k) >= 0; });
+    var chips = multi('q7', countries, function(k){ return q.o[k]; }, {onChange:function(){ other.hidden = A.q7.indexOf('other') < 0; if (!other.hidden && !txt(A.q7_other)) other.focus(); }});
+    other.hidden = A.q7.indexOf('other') < 0;
+    sub.append(h('p', {class:'sub-label'}, q.sub + ' ', h('small', null, '(' + q.subNote + ')')), chips, other,
+      h('p', {class:'sub-label'}, q.why + ' ', h('small', null, '(' + t('optional') + ')')),
+      textField('q7_why', q.whyph, {long:true, max:200, label:q.why}));
+    sub.hidden = A.q7_gate !== 'also';
+    c.append(single('q7_gate', ['only','also'], function(k){ return q.g[k]; }, {onChange:function(v){ sub.hidden = v !== 'also'; }}), sub);
+  },
+  q8:function(c){
+    var box = h('div', {class:'sls'});
+    Q8.forEach(function(k){
+      var key = 'q8_' + k;
+      var val = h('span', {class:'sl-val'});
+      var inp = slider(key, {min:1, max:5, step:1, start:3, label:tq('q8').o[k], color:function(v){ return toneColor((v - 1) / 4); },
+        paint:function(v){ val.textContent = v === null ? t('untouched') : v + ' · ' + t('sat')[v]; val.classList.toggle('set', v !== null); }});
+      box.append(h('div', {class:'sl'},
+        h('div', {class:'sl-head'}, h('label', {class:'sl-name', for:'f_' + key}, tq('q8').o[k]), val),
+        inp,
+        h('div', {class:'scale', 'aria-hidden':'true'}, h('span', null, '1'), h('span', null, '2'), h('span', null, '3'), h('span', null, '4'), h('span', null, '5'))));
+    });
+    c.append(box);
+  },
+  q9:function(c){
+    var q = tq('q9');
+    var other = textField('q9_other', t('other_ph'));
+    other.hidden = A.q9 !== 'other';
+    var val = h('span', {class:'sl-val'});
+    var inp = slider('q9_sure', {min:0, max:100, step:10, start:50, label:q.sure, color:function(v){ return toneColor(v / 100 + 0.25); },
+      paint:function(v){ val.textContent = v === null ? t('untouched') : v + '% · ' + t('sure')[v < 40 ? 0 : v < 80 ? 1 : 2]; val.classList.toggle('set', v !== null); }});
+    var sub = h('div', {class:'sub'},
+      h('div', {class:'sl'}, h('div', {class:'sl-head'}, h('label', {class:'sl-name', for:'f_q9_sure'}, q.sure), val), inp,
+        h('div', {class:'scale', 'aria-hidden':'true'}, h('span', null, '0%'), h('span', null, '50%'), h('span', null, '100%'))));
+    sub.hidden = !A.q9 || A.q9 === 'unsure';
+    c.append(single('q9', ['kr_job','kr_study','home','third','unsure','other'], function(k){ return q.o[k]; }, {cls:'grid2',
+      onChange:function(v){ other.hidden = v !== 'other'; sub.hidden = v === 'unsure'; if (v === 'other') other.focus(); }}), other, sub);
+  },
+  q10:function(c){
+    var q = tq('q10');
+    var num = h('span', {class:'nps-num'}), word = h('span', {class:'nps-word'});
+    var whyLabel = h('span');
+    var why = textField('q10_why', '', {long:true, max:200, label:q.why[1]});
+    var sub = h('div', {class:'sub'}, h('p', {class:'sub-label'}, whyLabel, ' ', h('small', null, '(' + t('optional') + ')')), why);
+    var inp = slider('q10', {min:0, max:10, step:1, start:5, label:q.t, color:function(v){ return v <= 6 ? 'var(--coral)' : v <= 8 ? 'var(--sun)' : 'var(--accent)'; },
+      paint:function(v){
+        var band = v === null ? 1 : v <= 6 ? 0 : v <= 8 ? 1 : 2;
+        num.textContent = v === null ? '?' : String(v);
+        num.classList.toggle('set', v !== null);
+        word.textContent = v === null ? t('untouched') : t('nps')[band];
+        whyLabel.textContent = q.why[band];
+        sub.hidden = v === null;
+      }});
+    c.append(h('div', {class:'nps-read'}, num, word), inp,
+      h('div', {class:'scale', 'aria-hidden':'true'}, h('span', null, '0'), h('span', null, '5'), h('span', null, '10')), sub);
+  }
+};
+
+/* 다음으로 넘어가기 전에 필요한 것: 문제가 없으면 '' */
+function missing(step){
+  switch (QIDS[step]) {
+    case 'q1': return !A.q1 ? 'need_pick' : (A.q1 === 'ETC' && !txt(A.q1_other)) ? 'need_text' : '';
+    case 'q2': return !A.q2 ? 'need_pick' : (A.q2 === 'other' && !txt(A.q2_other)) ? 'need_text' : '';
+    case 'q3': return A.q3 ? '' : 'need_pick';
+    case 'q4': return q4opts().indexOf(A.q4) >= 0 ? '' : 'need_pick';
+    case 'q5': return !(A.q5 && A.q5.length) ? 'need_rank' : (A.q5.indexOf('other') >= 0 && !txt(A.q5_other)) ? 'need_text' : '';
+    case 'q6': return !A.q6 ? 'need_pick' : (A.q6 === 'other' && !txt(A.q6_other)) ? 'need_text' : '';
+    case 'q7': return !A.q7_gate ? 'need_pick' : A.q7_gate === 'only' ? '' : !(A.q7 && A.q7.length) ? 'need_multi' : (A.q7.indexOf('other') >= 0 && !txt(A.q7_other)) ? 'need_text' : '';
+    case 'q8': return Q8.every(function(k){ return isNum(A['q8_' + k]); }) ? '' : 'need_sliders';
+    case 'q9': return !A.q9 ? 'need_pick' : (A.q9 === 'other' && !txt(A.q9_other)) ? 'need_text' : (A.q9 !== 'unsure' && !isNum(A.q9_sure)) ? 'need_slider' : '';
+    case 'q10': return isNum(A.q10) ? '' : 'need_slider';
+  }
+  return '';
+}
+
+/* ───────────── 비행 경로 ───────────── */
+var P0 = [16, 48], P1 = [300, -12], P2 = [584, 48];
+function bez(u){ var v = 1 - u; return [v*v*P0[0] + 2*v*u*P1[0] + u*u*P2[0], v*v*P0[1] + 2*v*u*P1[1] + u*u*P2[1]]; }
+function frac(step){ return step < 0 ? 0 : step >= NQ ? 1 : (step + 1) / (NQ + 1); }
+var routeF = frac(S.step), routeAnim = 0;
+(function initDots(){
+  var g = $('#routeDots');
+  for (var i = 0; i < NQ; i++) {
+    var p = bez(frac(i));
+    var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('class', 'wp'); c.setAttribute('cx', p[0]); c.setAttribute('cy', p[1]); c.setAttribute('r', 4.5);
+    g.append(c);
+  }
+})();
+function drawRoute(f){
+  var p = bez(f), a = bez(Math.max(0, f - 0.01)), b = bez(Math.min(1, f + 0.01));
+  var ang = Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
+  $('#plane').setAttribute('transform', 'translate(' + p[0].toFixed(1) + ' ' + (p[1] - 9).toFixed(1) + ') rotate(' + ang.toFixed(1) + ')');
+  var c = [P0[0] + (P1[0] - P0[0]) * f, P0[1] + (P1[1] - P0[1]) * f];   // de Casteljau: 0..f 구간
+  $('#routeProg').setAttribute('d', 'M' + P0[0] + ' ' + P0[1] + ' Q' + c[0].toFixed(1) + ' ' + c[1].toFixed(1) + ' ' + p[0].toFixed(1) + ' ' + p[1].toFixed(1));
+}
+function setRoute(step){
+  var target = frac(step), from = routeF;
+  document.querySelectorAll('#routeDots .wp').forEach(function(d, i){
+    d.setAttribute('class', 'wp' + (i < step ? ' done' : i === step ? ' cur' : ''));
+  });
+  cancelAnimationFrame(routeAnim);
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || from === target) { routeF = target; drawRoute(target); return; }
+  var t0 = performance.now();
+  (function tick(now){
+    var k = Math.min(1, (now - t0) / 520), e = 1 - Math.pow(1 - k, 3);
+    routeF = from + (target - from) * e;
+    drawRoute(routeF);
+    if (k < 1) routeAnim = requestAnimationFrame(tick);
+  })(t0);
+}
+
+/* ───────────── 화면 ───────────── */
+var stage = $('#stage'), nav = $('#nav'), navHint = $('#navHint'), btnBack = $('#btnBack'), btnNext = $('#btnNext');
+var flashTimer = 0;
+
+function flash(msg){
+  clearTimeout(flashTimer);
+  navHint.textContent = msg; navHint.classList.add('warn');
+  flashTimer = setTimeout(refreshNav, 2200);
+}
+function refreshNav(){
+  if (view !== 'flow' || S.step < 0 || S.step >= NQ) return;
+  clearTimeout(flashTimer);
+  var m = missing(S.step);
+  btnNext.setAttribute('aria-disabled', String(!!m));
+  navHint.classList.remove('warn');
+  navHint.textContent = m ? t(m) : '';
+}
+function chrome(){
+  var app = $('#app');
+  app.setAttribute('lang', S.lang);
+  document.documentElement.setAttribute('lang', S.lang);
+  $('#brand').textContent = t('brand');
+  document.querySelectorAll('#langs button').forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-lang') === S.lang)); });
+  var rib = $('#ribbon'); rib.hidden = !PREVIEW; rib.textContent = t('preview');
+  $('#rDep').textContent = t('depart'); $('#rArr').textContent = t('arrive');
+  btnBack.textContent = t('back');
+  var foot = [];
+  if (CFG.ORGANIZER) foot.push(t('organizer') + ': ' + CFG.ORGANIZER);
+  if (CFG.CONTACT) foot.push(t('contact') + ': ' + CFG.CONTACT);
+  $('#foot').textContent = foot.join(' · ');
+}
+
+function render(dir){
+  chrome();
+  var inFlow = view === 'flow' && S.step >= 0 && S.step < NQ;
+  var showRoute = inFlow || view === 'sending' || view === 'fail' || view === 'done';
+  $('#route').hidden = !showRoute;
+  nav.hidden = !inFlow;
+  if (showRoute) {
+    var rs = view === 'done' ? NQ : S.step;
+    setRoute(rs);
+    $('#rCount').textContent = view === 'done' ? '' : (Math.min(S.step, NQ - 1) + 1) + ' / ' + NQ;
+  }
+  var card = h('section', {class:'card enter' + (dir < 0 ? ' rev' : '')});
+  if (view === 'already') message(card, t('already_title'), t('already_lead'));
+  else if (view === 'closed') message(card, t('closed_title'), t('closed_lead'));
+  else if (view === 'sending') message(card, t('sending'), '');
+  else if (view === 'fail') failCard(card);
+  else if (view === 'done') doneCard(card);
+  else if (S.step < 0) introCard(card);
+  else questionCard(card, S.step);
+  stage.replaceChildren(card);
+  if (inFlow) { btnNext.textContent = S.step === NQ - 1 ? t('submit') : t('next'); refreshNav(); }
+  if (dir) { try { window.scrollTo(0, 0); } catch (e) {} var hd = card.querySelector('h1,h2'); if (hd) { hd.setAttribute('tabindex', '-1'); try { hd.focus({preventScroll:true}); } catch (e) {} } }
+}
+
+function message(card, title, lead){
+  card.append(h('h2', null, title));
+  if (lead) card.append(h('p', {class:'lead'}, lead));
+}
+function introCard(card){
+  var resume = S.started && Object.keys(A).length > 0;
+  var c1 = h('input', {type:'checkbox', id:'consent1'}), c2 = h('input', {type:'checkbox', id:'consent2'});
+  c1.checked = c2.checked = !!S.consent;
+  var facts = h('ul', {class:'facts'});
+  t('facts').forEach(function(f){ facts.append(h('li', null, f)); });
+  var honey = h('input', {type:'text', class:'hp', name:'website', tabindex:'-1', autocomplete:'off', 'aria-hidden':'true'});
+  honey.addEventListener('input', function(){ hp = honey.value; });
+  var warn = h('p', {class:'mini', role:'status'});
+  var go = h('button', {type:'button', class:'btn primary wide'}, resume ? t('resume') : t('start'));
+  go.addEventListener('click', function(){
+    if (!c1.checked || !c2.checked) { warn.textContent = t('need_consent'); warn.style.color = 'var(--coral)'; fx(go, 'shake'); return; }
+    S.consent = true; S.started = true;
+    S.step = resume && S.resumeAt >= 0 ? Math.min(S.resumeAt, NQ - 1) : 0;
+    save(); render(1);
+  });
+  card.append(
+    h('div', {class:'kicker'}, t('tagline').toUpperCase()),
+    h('h1', null, t('intro_title')),
+    h('p', {class:'lead'}, t('intro_lead')),
+    facts,
+    h('div', {class:'notice'}, h('p', null, t('who')), h('p', null, t('privacy'))),
+    h('label', {class:'check', for:'consent1'}, c1, h('span', null, t('consent1'))),
+    h('label', {class:'check', for:'consent2'}, c2, h('span', null, t('consent2'))),
+    honey, warn, go);
+}
+function questionCard(card, step){
+  var id = QIDS[step], q = tq(id);
+  card.append(h('div', {class:'kicker'}, 'Q' + (step + 1)), h('h2', null, TITLE[id] ? TITLE[id]() : q.t));
+  if (q.h) card.append(h('p', {class:'hint'}, q.h));
+  RENDER[id](card);
+}
+function failCard(card){
+  var b = h('button', {type:'button', class:'btn primary wide'}, t('retry'));
+  b.addEventListener('click', submit);
+  card.append(h('h2', null, t('retry')), h('p', {class:'alert'}, t('send_fail')), b);
+}
+function doneCard(card){
+  card.classList.add('done');
+  var d = new Date(), stampDate = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+  var svgNS = 'http://www.w3.org/2000/svg';
+  var svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('class', 'stamp'); svg.setAttribute('viewBox', '0 0 150 150'); svg.setAttribute('aria-hidden', 'true');
+  svg.innerHTML = '<circle cx="75" cy="75" r="68" fill="none" stroke="currentColor" stroke-width="3"/>' +
+    '<circle cx="75" cy="75" r="58" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 5"/>' +
+    '<text x="75" y="52" text-anchor="middle" font-size="12" letter-spacing="3">ARRIVED</text>' +
+    '<text x="75" y="86" text-anchor="middle" font-size="27" letter-spacing="2">KOREA</text>' +
+    '<text x="75" y="108" text-anchor="middle" font-size="12" letter-spacing="1.5">' + stampDate + '</text>';
+  card.append(svg, h('h2', null, t('done_title')), h('p', {class:'lead'}, PREVIEW ? t('preview_done') : t('done_lead')));
+  if (PREVIEW) {
+    var again = h('button', {type:'button', class:'btn'}, t('restart'));
+    again.addEventListener('click', function(){ S.a = A = {}; S.order = {}; S.step = -1; S.elapsed = 0; S.started = false; S.resumeAt = -1; view = 'flow'; save(); render(-1); });
+    card.append(again);
+  } else {
+    var url = CFG.SHARE_URL || (location.origin + location.pathname);
+    var copy = h('button', {type:'button', class:'btn'}, t('copy'));
+    var link = h('p', {class:'mini', style:'user-select:all;overflow-wrap:anywhere'}, url);
+    copy.addEventListener('click', function(){
+      var ok = function(){ copy.textContent = t('copied'); setTimeout(function(){ copy.textContent = t('copy'); }, 1800); };
+      try { navigator.clipboard.writeText(url).then(ok, sel); } catch (e) { sel(); }
+      function sel(){ try { var r = document.createRange(); r.selectNodeContents(link); var s = getSelection(); s.removeAllRanges(); s.addRange(r); } catch (e) {} }
+    });
+    card.append(h('p', {class:'hint'}, t('share_lead')), copy, link);
+  }
+}
+
+/* ───────────── 제출 ───────────── */
+function buildAnswers(){
+  var q8 = {}; Q8.forEach(function(k){ q8[k] = A['q8_' + k]; });
+  return {
+    q1:A.q1, q1_other:txt(A.q1_other), q2:A.q2, q2_other:txt(A.q2_other), q3:A.q3, q4:A.q4,
+    q5:(A.q5 || []).slice(0, 3), q5_other:txt(A.q5_other), q6:A.q6, q6_other:txt(A.q6_other),
+    q7:A.q7_gate === 'only' ? 'none' : (A.q7 || []), q7_other:txt(A.q7_other), q7_why:A.q7_gate === 'also' ? txt(A.q7_why) : '',
+    q8:q8, q9:A.q9, q9_other:txt(A.q9_other), q9_sure:A.q9 === 'unsure' ? '' : A.q9_sure, q10:A.q10, q10_why:txt(A.q10_why)
+  };
+}
+function submit(){
+  view = 'sending'; render(1);
+  var payload = {action:'submit', answers:buildAnswers(), meta:{lang:S.lang, src:S.src, duration_sec:S.elapsed, client_id:S.cid,
+    device:(window.matchMedia && matchMedia('(pointer: coarse)').matches) ? 'mobile' : 'desktop', hp:hp}};
+  if (PREVIEW) { setTimeout(function(){ view = 'done'; render(1); }, 700); return; }
+  fetch(CFG.API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)})
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if (j && j.ok) { LS.set('wk_done', {at:Date.now()}); LS.del('wk_state'); view = 'done'; }
+      else if (j && j.error === 'closed') view = 'closed';
+      else view = 'fail';
+      render(1);
+    })
+    .catch(function(){ view = 'fail'; render(1); });
+}
+
+/* ───────────── 이벤트 ───────────── */
+btnNext.addEventListener('click', function(){
+  var m = missing(S.step);
+  if (m) { fx(btnNext, 'shake'); flash(t(m)); return; }
+  if (S.step === NQ - 1) { submit(); return; }
+  S.step++; S.resumeAt = S.step; save(); render(1);
+});
+btnBack.addEventListener('click', function(){ S.step--; if (S.step >= 0) S.resumeAt = S.step; save(); render(-1); });
+document.querySelectorAll('#langs button').forEach(function(b){
+  b.addEventListener('click', function(){ S.lang = b.getAttribute('data-lang'); save(); render(0); });
+});
+setInterval(function(){
+  if (view === 'flow' && S.step >= 0 && S.step < NQ && !document.hidden) { S.elapsed++; if (S.elapsed % 5 === 0) save(); }
+}, 1000);
+
+/* ───────────── 시작 ───────────── */
+if (!PREVIEW && LS.get('wk_done')) view = 'already';
+if (view === 'flow' && S.step >= 0) { S.resumeAt = Math.min(S.step, NQ - 1); S.step = -1; }   // 다시 열면 소개 화면에서 '이어서 답하기'
+drawRoute(routeF = 0);
+render(0);
+if (!PREVIEW && view === 'flow') {
+  fetch(CFG.API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'status'})})
+    .then(function(r){ return r.json(); })
+    .then(function(j){ if (j && j.ok && j.open === false && view === 'flow') { view = 'closed'; render(0); } })
+    .catch(function(){});
+}
+})();
+</script>
+</body>
+</html>
