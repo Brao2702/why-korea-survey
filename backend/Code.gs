@@ -6,6 +6,7 @@
  * - 관리자 비밀번호: 코드에 쓰지 않습니다. [프로젝트 설정 → 스크립트 속성]에
  *   ADMIN_PASSWORD 라는 이름으로 넣습니다.
  * - 백업: 매일 새벽 3시에 스프레드시트 사본을 Drive 폴더에 저장합니다 (setup 실행 후).
+ * - v2: nickname(이름·별명, 선택), q11(설문 불편 사항, 선택) 열을 맨 뒤에 추가. 기존 시트에는 자동으로 열 제목이 붙습니다.
  */
 
 const SHEET_RESPONSES = 'responses';
@@ -25,7 +26,8 @@ const COLUMNS = [
   'q6', 'q6_other', 'q7', 'q7_other', 'q7_why',
   'q8_study', 'q8_cost', 'q8_job', 'q8_visa', 'q8_korean', 'q8_support',
   'q9', 'q9_other', 'q9_sure', 'q10', 'q10_why',
-  'flags', 'excluded', 'client_id'
+  'flags', 'excluded', 'client_id',
+  'nickname', 'q11'
 ];
 const NUMERIC = ['duration_sec', 'q8_study', 'q8_cost', 'q8_job', 'q8_visa', 'q8_korean', 'q8_support', 'q9_sure', 'q10'];
 
@@ -149,6 +151,8 @@ function normalize_(a, m) {
   r.q9_sure = r.q9 === 'unsure' ? '' : int_(a.q9_sure, 0, 100);
   r.q10 = int_(a.q10, 0, 10);
   r.q10_why = text_(a.q10_why, 200);
+  r.nickname = text_(a.nickname, 30);
+  r.q11 = text_(a.q11, 300);
 
   // 필수 문항이 비어 있으면 저장하지 않는다
   var required = ['q1', 'q2', 'q3', 'q4', 'q5_1', 'q6', 'q7', 'q9'];
@@ -279,7 +283,21 @@ function sheet_(name) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sh = ss.getSheetByName(name);
   if (!sh) sh = ensureSheet_(ss, name, name === SHEET_RAW ? ['id', 'submitted_at', 'json'] : COLUMNS);
+  else if (name === SHEET_RESPONSES) ensureColumns_(sh);
   return sh;
+}
+
+/** 새 버전에서 열이 늘었을 때: 기존 시트 맨 뒤에 빠진 열 제목을 붙인다 */
+function ensureColumns_(sh) {
+  var lastCol = sh.getLastColumn();
+  if (lastCol >= COLUMNS.length) return;
+  var head = sh.getRange(1, 1, 1, Math.max(lastCol, 1)).getValues()[0].map(String);
+  var rows = Math.max(sh.getMaxRows() - 1, 1);
+  for (var c = lastCol; c < COLUMNS.length; c++) {
+    if (head.indexOf(COLUMNS[c]) >= 0) continue;
+    sh.getRange(1, c + 1).setValue(COLUMNS[c]).setFontWeight('bold');
+    if (NUMERIC.indexOf(COLUMNS[c]) < 0) sh.getRange(2, c + 1, rows, 1).setNumberFormat('@');
+  }
 }
 
 function ensureSheet_(ss, name, header) {
