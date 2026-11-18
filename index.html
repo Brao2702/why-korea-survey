@@ -248,7 +248,7 @@ var LS = {
   del:function(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
 var LANGS = ['ko','en','vi','zh'];
-var NQ = 10;
+var NQ = 11;
 
 /* ───────────── 문구 (응답 값은 언어와 무관한 코드로 저장) ───────────── */
 var I18N = {
@@ -256,11 +256,12 @@ ko:{
   brand:'왜 한국이었나요?', tagline:'외국인 유학생 3분 설문',
   intro_title:'한국에 온 이유를 들려주세요',
   intro_lead:'통계는 유학생이 얼마나 늘었는지 알려 주지만, 왜 한국을 골랐는지는 알려 주지 않습니다. 그래서 여러분에게 직접 묻습니다.',
-  facts:['약 3분','10문항','완전 익명'],
+  facts:['약 3분','11문항','이름은 선택'],
   who:'대상: 지금 한국에서 공부하고 있는 외국인 유학생 (어학연수·학부·대학원·교환학생)',
-  privacy:'이름, 학교, 연락처는 묻지 않습니다. 응답은 수업 과제의 통계 분석에만 쓰입니다.',
+  privacy:'학교와 연락처는 묻지 않습니다. 이름은 별명이어도 되고 비워 두어도 됩니다. 응답은 수업 과제의 통계 분석에만 쓰입니다.',
+  name_label:'이름 또는 별명', name_ph:'예: 바람, Minh',
   consent1:'저는 지금 한국에서 공부하고 있는 외국인 유학생입니다.',
-  consent2:'익명 응답이 과제용 통계에 쓰이는 것에 동의합니다.',
+  consent2:'제 응답이 과제용 통계에 쓰이는 것에 동의합니다.',
   need_consent:'두 항목에 모두 체크해 주세요.',
   start:'출발하기', resume:'이어서 답하기',
   back:'이전', next:'다음', submit:'제출하기',
@@ -294,18 +295,20 @@ ko:{
     q8:{t:'지금 한국 유학 생활에 얼마나 만족하나요?',h:'항목마다 막대를 움직여 주세요. 1 = 매우 불만족, 5 = 매우 만족',
         o:{study:'수업·학업',cost:'학비·생활비 부담',job:'아르바이트 기회',visa:'비자·체류 절차',korean:'한국어 적응',support:'학교의 유학생 지원'}},
     q9:{t:'졸업(수료) 후에는 어떻게 할 계획인가요?',h:'',o:{kr_job:'한국에서 취업',kr_study:'한국에서 진학',home:'본국으로 귀국',third:'다른 나라로 이동',unsure:'아직 모르겠다',other:'기타'},sure:'이 계획은 얼마나 확실한가요?'},
-    q10:{t:'같은 나라 친구나 후배에게 한국 유학을 추천하시겠어요?',h:'0 = 전혀 추천하지 않음 · 10 = 적극 추천',why:['어떤 점이 아쉬웠나요?','한 가지가 달라진다면 더 추천할 수 있을까요?','무엇이 가장 좋았나요?']}
+    q10:{t:'같은 나라 친구나 후배에게 한국 유학을 추천하시겠어요?',h:'0 = 전혀 추천하지 않음 · 10 = 적극 추천',why:['어떤 점이 아쉬웠나요?','한 가지가 달라진다면 더 추천할 수 있을까요?','무엇이 가장 좋았나요?']},
+    q11:{t:'설문을 하면서 불편한 점이 있다면 적어주세요',h:'없으면 비워 두고 제출해도 됩니다.',ph:'예: 3번 문항의 뜻이 헷갈렸어요'}
   }
 },
 en:{
   brand:'Why Korea?', tagline:'A 3-minute survey for international students',
   intro_title:'Tell us why you came to Korea',
   intro_lead:'Statistics show how many international students have come, but not why they chose Korea. So we are asking you directly.',
-  facts:['About 3 min','10 questions','Anonymous'],
+  facts:['About 3 min','11 questions','Name optional'],
   who:'For international students studying in Korea right now (language course, undergraduate, graduate, exchange).',
-  privacy:'We do not ask for your name, school or contact details. Answers are used only for statistics in a class project.',
+  privacy:'We do not ask for your school or contact details. Your name can be a nickname, or you can leave it blank. Answers are used only for statistics in a class project.',
+  name_label:'Name or nickname', name_ph:'e.g. Minh',
   consent1:'I am an international student currently studying in Korea.',
-  consent2:'I agree that my anonymous answers may be used for class-project statistics.',
+  consent2:'I agree that my answers may be used for class-project statistics.',
   need_consent:'Please tick both boxes.',
   start:'Take off', resume:'Continue where I left off',
   back:'Back', next:'Next', submit:'Submit',
@@ -339,18 +342,20 @@ en:{
     q8:{t:'How satisfied are you with your life as a student in Korea?',h:'Move the slider for each item. 1 = very dissatisfied, 5 = very satisfied',
         o:{study:'Classes and study',cost:'Tuition and living costs',job:'Part-time job opportunities',visa:'Visa and immigration procedures',korean:'Adapting to the Korean language',support:"My school's support for international students"}},
     q9:{t:'What do you plan to do after you finish your studies?',h:'',o:{kr_job:'Work in Korea',kr_study:'Continue studying in Korea',home:'Return to my home country',third:'Move to another country',unsure:'Not sure yet',other:'Other'},sure:'How certain is this plan?'},
-    q10:{t:'Would you recommend studying in Korea to friends or juniors from your country?',h:'0 = not at all · 10 = definitely',why:['What was disappointing?','What one change would make you recommend it more?','What was the best part?']}
+    q10:{t:'Would you recommend studying in Korea to friends or juniors from your country?',h:'0 = not at all · 10 = definitely',why:['What was disappointing?','What one change would make you recommend it more?','What was the best part?']},
+    q11:{t:'If anything about this survey was inconvenient, please tell us',h:'If not, leave it blank and submit.',ph:'e.g. Question 3 was confusing'}
   }
 },
 vi:{
   brand:'Vì sao lại là Hàn Quốc?', tagline:'Khảo sát 3 phút dành cho du học sinh',
   intro_title:'Hãy kể lý do bạn đến Hàn Quốc',
   intro_lead:'Số liệu thống kê cho biết du học sinh tăng bao nhiêu, nhưng không cho biết vì sao các bạn chọn Hàn Quốc. Vì vậy chúng mình muốn hỏi trực tiếp bạn.',
-  facts:['Khoảng 3 phút','10 câu hỏi','Ẩn danh'],
+  facts:['Khoảng 3 phút','11 câu hỏi','Tên không bắt buộc'],
   who:'Dành cho du học sinh nước ngoài đang học tại Hàn Quốc (học tiếng, đại học, sau đại học, trao đổi).',
-  privacy:'Khảo sát không hỏi tên, trường hay thông tin liên lạc. Câu trả lời chỉ dùng để thống kê cho bài tập môn học.',
+  privacy:'Khảo sát không hỏi trường hay thông tin liên lạc. Tên có thể là biệt danh, hoặc để trống cũng được. Câu trả lời chỉ dùng để thống kê cho bài tập môn học.',
+  name_label:'Tên hoặc biệt danh', name_ph:'Ví dụ: Minh',
   consent1:'Tôi là du học sinh nước ngoài đang học tại Hàn Quốc.',
-  consent2:'Tôi đồng ý để câu trả lời ẩn danh được dùng cho thống kê của bài tập.',
+  consent2:'Tôi đồng ý để câu trả lời của mình được dùng cho thống kê của bài tập.',
   need_consent:'Hãy đánh dấu cả hai ô.',
   start:'Cất cánh', resume:'Trả lời tiếp',
   back:'Quay lại', next:'Tiếp', submit:'Gửi',
@@ -384,18 +389,20 @@ vi:{
     q8:{t:'Bạn hài lòng đến mức nào với cuộc sống du học tại Hàn Quốc?',h:'Hãy kéo thanh trượt cho từng mục. 1 = rất không hài lòng, 5 = rất hài lòng',
         o:{study:'Việc học trên lớp',cost:'Học phí và sinh hoạt phí',job:'Cơ hội làm thêm',visa:'Thủ tục visa, lưu trú',korean:'Thích nghi với tiếng Hàn',support:'Hỗ trợ của trường dành cho du học sinh'}},
     q9:{t:'Sau khi học xong, bạn dự định làm gì?',h:'',o:{kr_job:'Làm việc tại Hàn Quốc',kr_study:'Học tiếp tại Hàn Quốc',home:'Về nước',third:'Sang nước khác',unsure:'Chưa biết',other:'Khác'},sure:'Bạn chắc chắn về kế hoạch này đến mức nào?'},
-    q10:{t:'Bạn có giới thiệu du học Hàn Quốc cho bạn bè, đàn em cùng nước không?',h:'0 = hoàn toàn không · 10 = chắc chắn có',why:['Điều gì khiến bạn chưa hài lòng?','Nếu thay đổi một điều thì bạn sẽ giới thiệu nhiều hơn?','Điều gì bạn thích nhất?']}
+    q10:{t:'Bạn có giới thiệu du học Hàn Quốc cho bạn bè, đàn em cùng nước không?',h:'0 = hoàn toàn không · 10 = chắc chắn có',why:['Điều gì khiến bạn chưa hài lòng?','Nếu thay đổi một điều thì bạn sẽ giới thiệu nhiều hơn?','Điều gì bạn thích nhất?']},
+    q11:{t:'Nếu có điều gì bất tiện khi làm khảo sát, hãy viết cho chúng mình biết',h:'Không có thì cứ để trống và gửi.',ph:'Ví dụ: câu 3 hơi khó hiểu'}
   }
 },
 zh:{
   brand:'为什么选择韩国?', tagline:'外国留学生3分钟问卷',
   intro_title:'请告诉我们你来韩国的理由',
   intro_lead:'统计数据能说明留学生增加了多少,却说明不了大家为什么选择韩国。所以我们想直接问问你。',
-  facts:['约3分钟','10道题','完全匿名'],
+  facts:['约3分钟','11道题','姓名选填'],
   who:'对象:目前在韩国学习的外国留学生(语言研修、本科、研究生、交换生)。',
-  privacy:'问卷不会询问姓名、学校或联系方式。回答仅用于课程作业的统计分析。',
+  privacy:'问卷不会询问学校或联系方式。姓名可以填昵称,也可以不填。回答仅用于课程作业的统计分析。',
+  name_label:'姓名或昵称', name_ph:'例如:小明',
   consent1:'我是目前在韩国学习的外国留学生。',
-  consent2:'我同意将匿名回答用于课程作业的统计。',
+  consent2:'我同意将我的回答用于课程作业的统计。',
   need_consent:'请勾选两项。',
   start:'出发', resume:'继续作答',
   back:'上一步', next:'下一步', submit:'提交',
@@ -429,7 +436,8 @@ zh:{
     q8:{t:'你对现在的韩国留学生活满意吗?',h:'请拖动每一项的滑块。1 = 非常不满意,5 = 非常满意',
         o:{study:'课程与学业',cost:'学费和生活费负担',job:'打工机会',visa:'签证与居留手续',korean:'韩语适应',support:'学校对留学生的支持'}},
     q9:{t:'毕业(结业)后你有什么打算?',h:'',o:{kr_job:'在韩国就业',kr_study:'在韩国继续深造',home:'回国',third:'去其他国家',unsure:'还不知道',other:'其他'},sure:'这个计划有多确定?'},
-    q10:{t:'你会向同国的朋友或学弟学妹推荐来韩国留学吗?',h:'0 = 完全不推荐 · 10 = 非常推荐',why:['哪些地方让你觉得遗憾?','如果改变一点,你会更愿意推荐吗?','你最满意的是什么?']}
+    q10:{t:'你会向同国的朋友或学弟学妹推荐来韩国留学吗?',h:'0 = 完全不推荐 · 10 = 非常推荐',why:['哪些地方让你觉得遗憾?','如果改变一点,你会更愿意推荐吗?','你最满意的是什么?']},
+    q11:{t:'如果答题过程中有不方便的地方,请写下来',h:'没有的话可以留空直接提交。',ph:'例如:第3题有点难理解'}
   }
 }
 };
@@ -545,7 +553,7 @@ function slider(key, o){
 function toneColor(f){ return f < 0.4 ? 'var(--coral)' : f < 0.7 ? 'var(--sun)' : 'var(--accent)'; }
 
 /* ───────────── 문항 ───────────── */
-var QIDS = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10'];
+var QIDS = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11'];
 var YEARS = ['le2020','2021','2022','2023','2024','2025','2026'];
 var Q8 = ['study','cost','job','visa','korean','support'];
 
@@ -688,6 +696,10 @@ var RENDER = {
       }});
     c.append(h('div', {class:'nps-read'}, num, word), inp,
       h('div', {class:'scale', 'aria-hidden':'true'}, h('span', null, '0'), h('span', null, '5'), h('span', null, '10')), sub);
+  },
+  q11:function(c){
+    var q = tq('q11');
+    c.append(textField('q11', q.ph, {long:true, max:300, label:q.t}));
   }
 };
 
@@ -704,6 +716,7 @@ function missing(step){
     case 'q8': return Q8.every(function(k){ return isNum(A['q8_' + k]); }) ? '' : 'need_sliders';
     case 'q9': return !A.q9 ? 'need_pick' : (A.q9 === 'other' && !txt(A.q9_other)) ? 'need_text' : (A.q9 !== 'unsure' && !isNum(A.q9_sure)) ? 'need_slider' : '';
     case 'q10': return isNum(A.q10) ? '' : 'need_slider';
+    case 'q11': return '';
   }
   return '';
 }
@@ -828,6 +841,8 @@ function introCard(card){
     h('p', {class:'lead'}, t('intro_lead')),
     facts,
     h('div', {class:'notice'}, h('p', null, t('who')), h('p', null, t('privacy'))),
+    h('div', {class:'sub'}, h('label', {class:'sub-label', for:'f_nickname'}, t('name_label') + ' ', h('small', null, '(' + t('optional') + ')')),
+      textField('nickname', t('name_ph'), {max:30, label:t('name_label')})),
     h('label', {class:'check', for:'consent1'}, c1, h('span', null, t('consent1'))),
     h('label', {class:'check', for:'consent2'}, c2, h('span', null, t('consent2'))),
     honey, warn, go);
@@ -879,7 +894,8 @@ function buildAnswers(){
     q1:A.q1, q1_other:txt(A.q1_other), q2:A.q2, q2_other:txt(A.q2_other), q3:A.q3, q4:A.q4,
     q5:(A.q5 || []).slice(0, 3), q5_other:txt(A.q5_other), q6:A.q6, q6_other:txt(A.q6_other),
     q7:A.q7_gate === 'only' ? 'none' : (A.q7 || []), q7_other:txt(A.q7_other), q7_why:A.q7_gate === 'also' ? txt(A.q7_why) : '',
-    q8:q8, q9:A.q9, q9_other:txt(A.q9_other), q9_sure:A.q9 === 'unsure' ? '' : A.q9_sure, q10:A.q10, q10_why:txt(A.q10_why)
+    q8:q8, q9:A.q9, q9_other:txt(A.q9_other), q9_sure:A.q9 === 'unsure' ? '' : A.q9_sure, q10:A.q10, q10_why:txt(A.q10_why),
+    nickname:txt(A.nickname), q11:txt(A.q11)
   };
 }
 function submit(){
