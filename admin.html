@@ -9,38 +9,39 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
-/* Layout: summary first (counts, quota per country), then one panel per question, then the raw table. Same tokens as the survey. */
+/* Layout: overview (all countries) and one page per country, switched by #hash. Each question gets the chart that fits its data shape. */
 :root{
-  --bg:#EEF7FA; --bg-2:#DDEFF5; --surface:#FFFFFF; --ink:#14313D; --muted:#58737F; --line:#D3E4EA; --track:#E6F0F4;
+  --bg:#EEF7FA; --surface:#FFFFFF; --ink:#14313D; --muted:#58737F; --line:#D3E4EA; --track:#E6F0F4;
   --accent:#12957E; --accent-ink:#0B6B5A; --accent-soft:#DDF4EE; --on-accent:#FFFFFF;
-  --sun:#F4B63F; --sun-soft:#FFF2D2; --on-sun:#3A2A05; --coral:#E3644F; --coral-soft:#FDE9E5;
+  --sun:#F4B63F; --sun-soft:#FFF2D2; --coral:#E3644F; --coral-soft:#FDE9E5;
   --c-VN:#d94841; --c-CN:#d9871c; --c-MN:#3576d6; --c-NP:#8b5bd6; --c-ETC:#7b8f98;
+  --k1:#12957E; --k2:#C98A12; --k3:#C94F72; --k4:#4C5FD5; --k5:#7F8F2F; --k6:#2F8FB8; --k7:#6B7F88;
   --font-body:'Be Vietnam Pro','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
   --font-display:'Gowun Dodum','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#0E1D24; --bg-2:#13303A; --surface:#172C36; --ink:#E7F2F5; --muted:#9AB3BD; --line:#2B4653; --track:#22404C;
+  --bg:#0E1D24; --surface:#172C36; --ink:#E7F2F5; --muted:#9AB3BD; --line:#2B4653; --track:#22404C;
   --accent:#3CC9AF; --accent-ink:#7FE0CD; --accent-soft:#16393A; --on-accent:#06231D;
-  --sun:#F4B63F; --sun-soft:#3A2F14; --on-sun:#3A2A05; --coral:#F08878; --coral-soft:#3B211D;
-  --c-VN:#ef6a62; --c-CN:#eda03c; --c-MN:#5b97ee; --c-NP:#a583ea; --c-ETC:#9fb2ba; color-scheme:dark } }
+  --sun:#F4B63F; --sun-soft:#3A2F14; --coral:#F08878; --coral-soft:#3B211D;
+  --c-VN:#ef6a62; --c-CN:#eda03c; --c-MN:#5b97ee; --c-NP:#a583ea; --c-ETC:#9fb2ba;
+  --k1:#2FB39A; --k2:#D9A030; --k3:#E06F8E; --k4:#6F80EA; --k5:#9AAB45; --k6:#4BAAD3; --k7:#8DA0A8; color-scheme:dark } }
 :root[data-theme="dark"]{
-  --bg:#0E1D24; --bg-2:#13303A; --surface:#172C36; --ink:#E7F2F5; --muted:#9AB3BD; --line:#2B4653; --track:#22404C;
+  --bg:#0E1D24; --surface:#172C36; --ink:#E7F2F5; --muted:#9AB3BD; --line:#2B4653; --track:#22404C;
   --accent:#3CC9AF; --accent-ink:#7FE0CD; --accent-soft:#16393A; --on-accent:#06231D;
-  --sun:#F4B63F; --sun-soft:#3A2F14; --on-sun:#3A2A05; --coral:#F08878; --coral-soft:#3B211D;
-  --c-VN:#ef6a62; --c-CN:#eda03c; --c-MN:#5b97ee; --c-NP:#a583ea; --c-ETC:#9fb2ba; color-scheme:dark }
+  --sun:#F4B63F; --sun-soft:#3A2F14; --coral:#F08878; --coral-soft:#3B211D;
+  --c-VN:#ef6a62; --c-CN:#eda03c; --c-MN:#5b97ee; --c-NP:#a583ea; --c-ETC:#9fb2ba;
+  --k1:#2FB39A; --k2:#D9A030; --k3:#E06F8E; --k4:#6F80EA; --k5:#9AAB45; --k6:#4BAAD3; --k7:#8DA0A8; color-scheme:dark }
 
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
-button,input,select{font:inherit;color:inherit}
+button,input{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px}
-.wrap{max-width:1120px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+.wrap{max-width:1120px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
 .num{font-variant-numeric:tabular-nums}
 h1{font-family:var(--font-display);font-weight:400;font-size:26px;margin:0;line-height:1.3}
 h2{font-size:15px;font-weight:700;margin:0;text-wrap:balance}
-.muted{color:var(--muted)}
-.small{font-size:12.5px}
+.muted{color:var(--muted)} .small{font-size:12.5px}
 
-/* login */
 .login{max-width:400px;margin:8vh auto 0;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:28px 24px;display:flex;flex-direction:column;gap:14px}
 .field{width:100%;min-height:48px;padding:10px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface)}
 .field:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
@@ -51,89 +52,120 @@ h2{font-size:15px;font-weight:700;margin:0;text-wrap:balance}
 .btn[disabled]{opacity:.45;cursor:default}
 .err{color:var(--coral);font-size:13.5px;margin:0;min-height:20px}
 
-/* header */
 .head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
-.head-l{display:flex;flex-direction:column;gap:2px;min-width:0}
-.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700}
 .pill.open{background:var(--accent-soft);color:var(--accent-ink)}
 .pill.closed{background:var(--coral-soft);color:var(--coral)}
 .pill.demo{background:var(--sun-soft);color:var(--ink);border:1px dashed var(--sun)}
 .toast{font-size:13px;color:var(--accent-ink);min-height:20px;margin:0}
 
-.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.chip{min-height:36px;padding:4px 13px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
-.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+/* 국가 탭 */
+.navbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px}
+.tab{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:4px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+.tab:hover{border-color:var(--accent)}
+.tab[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.tab b{font-weight:500;font-size:12px;opacity:.75}
 .sw{width:10px;height:10px;border-radius:3px;flex:none;display:inline-block}
-.toggle{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted);margin-left:auto;cursor:pointer}
+.toggle{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);margin-left:auto;cursor:pointer}
 
-/* kpis */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .kpi .lbl{font-size:12.5px;color:var(--muted)}
 .kpi .val{font-family:var(--font-display);font-size:30px;line-height:1.15}
 .kpi .sub{font-size:12px;color:var(--muted)}
 
-/* panels */
+/* 국가 카드 */
+.ccards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.ccard{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:16px;background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--cc);text-decoration:none;color:var(--ink);transition:transform .15s,box-shadow .15s}
+.ccard:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,49,61,.10)}
+.ccard-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ccard-name{font-weight:700;font-size:16px}
+.ccard dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0;font-size:13px}
+.ccard dt{color:var(--muted)} .ccard dd{margin:0;text-align:right;font-weight:600;overflow-wrap:anywhere}
+.ccard .go{font-size:12.5px;color:var(--accent-ink);font-weight:600}
+.ring{width:58px;height:58px;flex:none}
+
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 @media (max-width:860px){.grid{grid-template-columns:1fr}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .panel.full{grid-column:1/-1}
 .panel-h{display:flex;flex-direction:column;gap:2px}
 .qn{font-size:11.5px;font-weight:700;letter-spacing:.1em;color:var(--accent-ink)}
-.empty{color:var(--muted);font-size:13.5px;margin:0;padding:10px 0}
+.empty{color:var(--muted);font-size:13.5px;margin:0;padding:8px 0}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+svg.chart{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--font-body);fill:var(--muted);font-size:11px}
+svg .strong{fill:var(--ink);font-weight:700}
 
-.bars{display:flex;flex-direction:column;gap:9px}
-.bar{display:grid;grid-template-columns:minmax(0,38%) minmax(0,1fr) auto;gap:10px;align-items:center}
-@media (max-width:520px){.bar{grid-template-columns:minmax(0,1fr) auto}.bar .bar-l{grid-column:1/-1}}
-.bar-l{font-size:13.5px;overflow-wrap:anywhere;line-height:1.35}
-.bar-t{height:18px;border-radius:5px;background:var(--track);display:flex;overflow:hidden;position:relative}
-.bar-t span{height:100%;min-width:0}
-.bar-t .mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.55}
-.bar-v{font-size:12.5px;color:var(--muted);white-space:nowrap;text-align:right;min-width:74px}
-.bar-v b{color:var(--ink);font-weight:700}
-.tag{font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;background:var(--sun-soft);color:var(--ink);border:1px solid var(--sun);margin-left:6px;white-space:nowrap}
+.legend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13px;min-width:0;flex:1}
+.legend li{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:8px;align-items:center}
+.legend li span:nth-child(2){overflow-wrap:anywhere;line-height:1.3}
+.legend li em{font-style:normal;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.legend li em b{color:var(--ink)}
+.duo{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.duo > svg, .duo > .waffle{flex:none}
+.duo > .legend{flex:1 1 200px}
 
-.days{display:flex;align-items:flex-end;gap:4px;height:92px;overflow-x:auto;padding-top:16px}
-.day{flex:1 0 18px;max-width:44px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%}
-.day i{width:100%;border-radius:4px 4px 0 0;background:var(--accent);min-height:2px;display:block}
-.day span{font-size:10.5px;color:var(--muted);white-space:nowrap}
-.day b{font-size:11px;font-weight:600}
+.waffle{display:grid;grid-template-columns:repeat(10,16px);gap:3px}
+.waffle i{width:16px;height:16px;border-radius:3px;display:block;background:var(--track)}
 
-.dots{display:flex;flex-direction:column;gap:12px}
-.dotrow{display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr) 44px;gap:10px;align-items:center}
-.dot-t{position:relative;height:20px}
-.dot-t::before{content:"";position:absolute;left:0;right:0;top:9px;height:2px;background:var(--track)}
-.dot-t i{position:absolute;top:3px;width:14px;height:14px;border-radius:50%;margin-left:-7px;border:2px solid var(--surface)}
-.axis{display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr) 44px;gap:10px;font-size:11px;color:var(--muted)}
-.axis div{display:flex;justify-content:space-between}
+.tree{position:relative;height:230px;border-radius:10px;overflow:hidden}
+.tree div{position:absolute;border:2px solid var(--surface);border-radius:8px;padding:6px 8px;color:#fff;font-size:12px;line-height:1.25;overflow:hidden;display:flex;flex-direction:column;gap:1px}
+.tree div b{font-size:15px}
 
-.hist{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:4px;align-items:end;height:96px}
-.hist div{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;height:100%}
-.hist i{width:100%;border-radius:4px 4px 0 0;min-height:2px;display:block}
-.hist span{font-size:11px;color:var(--muted)}
+.lol{display:flex;flex-direction:column;gap:8px}
+.lol-row{display:grid;grid-template-columns:minmax(0,40%) minmax(0,1fr) 92px;gap:10px;align-items:center}
+@media (max-width:520px){.lol-row{grid-template-columns:minmax(0,1fr) 84px}.lol-row .lab{grid-column:1/-1}}
+.lab{font-size:13.5px;line-height:1.3;overflow-wrap:anywhere}
+.lol-t{position:relative;height:16px}
+.lol-t::before{content:"";position:absolute;left:0;right:0;top:7px;height:2px;background:var(--track);border-radius:2px}
+.lol-t .stem{position:absolute;left:0;top:7px;height:2px;border-radius:2px}
+.lol-t .dot{position:absolute;top:1px;width:14px;height:14px;margin-left:-7px;border-radius:50%;border:2px solid var(--surface)}
+.lol-t .mid{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink);opacity:.35}
+.val{font-size:12.5px;color:var(--muted);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.val b{color:var(--ink)}
 
-.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);list-style:none;margin:0;padding:0}
-.legend li{display:flex;align-items:center;gap:6px}
+.hb{display:flex;flex-direction:column;gap:8px}
+.hb-row{display:grid;grid-template-columns:minmax(0,32%) minmax(0,1fr) 92px;gap:10px;align-items:center}
+.hb-t{height:14px;border-radius:4px;background:var(--track);overflow:hidden}
+.hb-t span{display:block;height:100%;border-radius:4px}
+
+.stack{display:flex;height:30px;border-radius:8px;overflow:hidden;gap:2px}
+.stack span{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;min-width:0;overflow:hidden;white-space:nowrap}
+
+.heat{width:100%;border-collapse:separate;border-spacing:3px;font-size:13px;min-width:560px}
+.heat th{font-size:11.5px;color:var(--muted);font-weight:600;text-align:center;padding:4px;line-height:1.25}
+.heat th:first-child{text-align:left}
+.heat td{text-align:center;padding:9px 4px;border-radius:6px;font-weight:700;font-variant-numeric:tabular-nums}
+.heat td:first-child{text-align:left;font-weight:600;background:none;white-space:nowrap}
+.heat td.n{background:none;color:var(--muted);font-weight:500}
+.scalebar{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted)}
+.scalebar i{display:block;width:140px;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--coral),var(--surface) 50%,var(--accent));border:1px solid var(--line)}
+
+.ctitle{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ctitle .flag{width:16px;height:40px;border-radius:5px}
+.badge{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--sun-soft);color:var(--ink);border:1px solid var(--sun)}
+.pager{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 
 .quotes{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow:auto;list-style:none;margin:0;padding:0}
 .quotes li{border-left:3px solid var(--line);padding:2px 0 2px 10px;font-size:13.5px;overflow-wrap:anywhere}
 .quotes small{display:block;color:var(--muted);font-size:11.5px}
 
+.scroll{overflow:auto}
 .tablewrap{overflow:auto;max-height:460px}
-thead th{position:sticky;top:0;background:var(--surface)}
-table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
-th{text-align:left;font-size:11.5px;color:var(--muted);font-weight:600;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
-td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+table.list{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+table.list th{text-align:left;font-size:11.5px;color:var(--muted);font-weight:600;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--surface)}
+table.list td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
 tr.x td{opacity:.45;text-decoration:line-through}
 tr.x td:last-child{opacity:1;text-decoration:none}
-.flag{font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;background:var(--coral-soft);color:var(--coral);margin-right:4px}
+.flagtag{font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;background:var(--coral-soft);color:var(--coral);margin-right:4px}
 .linkbtn{border:0;background:none;color:var(--accent-ink);font-weight:600;font-size:12.5px;cursor:pointer;padding:4px 0;text-decoration:underline}
+@media (prefers-reduced-motion: reduce){.ccard{transition:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <!-- 로그인 -->
   <section class="login" id="login" hidden>
     <h1>설문 관리</h1>
     <p class="muted" id="loginLead" style="margin:0">「왜 한국이었나요?」 응답을 확인합니다.</p>
@@ -145,47 +177,24 @@ tr.x td:last-child{opacity:1;text-decoration:none}
     <p class="err" id="loginErr" role="alert"></p>
   </section>
 
-  <!-- 대시보드 -->
-  <div id="dash" hidden style="display:flex;flex-direction:column;gap:18px">
-    <header class="head">
-      <div class="head-l">
-        <h1>왜 한국이었나요? · 응답 현황</h1>
-        <div class="muted small"><span id="statePill"></span> <span id="updated"></span></div>
-      </div>
-      <div class="tools">
-        <button class="btn" id="btnRefresh" type="button">새로고침</button>
-        <button class="btn" id="btnOpen" type="button">설문 닫기</button>
-        <button class="btn" id="btnCsv" type="button">CSV 내려받기</button>
-        <button class="btn" id="btnBackup" type="button">지금 백업</button>
-        <button class="btn" id="btnLogout" type="button">나가기</button>
-      </div>
-    </header>
-    <p class="toast" id="toast" role="status"></p>
-
-    <section class="kpis" id="kpis" aria-label="요약"></section>
-
-    <div class="filters" id="filters" role="group" aria-label="국가 선택"></div>
-    <ul class="legend" id="legend" aria-label="막대와 점의 색"></ul>
-
-    <div class="grid">
-      <section class="panel"><div class="panel-h"><h2>국가별 응답 수와 목표</h2><span class="muted small" id="quotaNote"></span></div><div class="bars" id="pQuota"></div></section>
-      <section class="panel"><div class="panel-h"><h2>날짜별 응답 수</h2><span class="muted small">제출일 기준 (한국 시간)</span></div><div class="days" id="pDays"></div></section>
-
-      <section class="panel"><div class="panel-h"><span class="qn">Q2</span><h2>현재 과정 (체류자격)</h2></div><div class="bars" id="pQ2"></div></section>
-      <section class="panel"><div class="panel-h"><span class="qn">Q3</span><h2>처음 입국한 해</h2></div><div class="bars" id="pQ3"></div></section>
-      <section class="panel"><div class="panel-h"><span class="qn">Q4</span><h2>어학연수 → 학위과정</h2></div><div class="bars" id="pQ4"></div></section>
-      <section class="panel"><div class="panel-h"><span class="qn">Q6</span><h2>가장 큰 영향을 준 정보 경로</h2></div><div class="bars" id="pQ6"></div></section>
-      <section class="panel full"><div class="panel-h"><span class="qn">Q5</span><h2>한국을 고른 이유 (순위 점수)</h2><span class="muted small">1순위 3점 · 2순위 2점 · 3순위 1점을 더한 값</span></div><div class="bars" id="pQ5"></div></section>
-      <section class="panel"><div class="panel-h"><span class="qn">Q7</span><h2>함께 고민한 나라</h2></div><div class="bars" id="pQ7"></div></section>
-      <section class="panel"><div class="panel-h"><span class="qn">Q9</span><h2>졸업 후 계획</h2><span class="muted small" id="sureNote"></span></div><div class="bars" id="pQ9"></div></section>
-      <section class="panel"><div class="panel-h"><span class="qn">Q8</span><h2>항목별 만족도 평균 (1~5점)</h2></div><div id="pQ8"></div></section>
-      <section class="panel"><div class="panel-h"><span class="qn">Q10</span><h2>추천 의향 (0~10점)</h2><span class="muted small">NPS = 9~10점 비율 − 0~6점 비율</span></div><div class="hist" id="pHist"></div><div class="bars" id="pNps"></div></section>
-      <section class="panel"><div class="panel-h"><span class="qn">Q7 · 주관식</span><h2>그래도 한국을 고른 결정적 이유</h2></div><ul class="quotes" id="pWhy7"></ul></section>
-      <section class="panel"><div class="panel-h"><span class="qn">Q10 · 주관식</span><h2>추천 점수의 이유</h2></div><ul class="quotes" id="pWhy10"></ul></section>
-      <section class="panel full"><div class="panel-h"><span class="qn">Q11 · 주관식</span><h2>설문을 하면서 불편했던 점</h2><span class="muted small">설문 자체를 고칠 때 참고하세요.</span></div><ul class="quotes" id="pQ11"></ul></section>
-      <section class="panel full"><div class="panel-h"><h2>응답 목록</h2><span class="muted small">주의 표시: 빠름 = 45초 안에 끝냄 · 같은 점수 = 만족도 6항목이 모두 같음. 테스트 응답은 ‘제외’를 눌러 집계에서 빼세요.</span></div>
-        <div class="tablewrap"><table><thead><tr><th>제출 시각</th><th>이름</th><th>국가</th><th>과정</th><th>입국</th><th>소요</th><th>추천</th><th>언어</th><th>경로</th><th>주의</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
-      </section>
+  <div id="dash" hidden>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <header class="head">
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+          <h1>왜 한국이었나요? · 응답 현황</h1>
+          <div class="muted small"><span id="statePill" class="pill"></span> <span id="updated"></span></div>
+        </div>
+        <div class="tools">
+          <button class="btn" id="btnRefresh" type="button">새로고침</button>
+          <button class="btn" id="btnOpen" type="button">설문 닫기</button>
+          <button class="btn" id="btnCsv" type="button">CSV 내려받기</button>
+          <button class="btn" id="btnBackup" type="button">지금 백업</button>
+          <button class="btn" id="btnLogout" type="button">나가기</button>
+        </div>
+      </header>
+      <p class="toast" id="toast" role="status"></p>
+      <nav class="navbar" id="navbar" aria-label="국가별 페이지"></nav>
+      <main id="view" style="display:flex;flex-direction:column;gap:16px"></main>
     </div>
   </div>
 </div>
@@ -198,295 +207,521 @@ var CFG = Object.assign({API_URL:'', TARGET_PER_COUNTRY:30}, window.SURVEY_CONFI
 var PREVIEW = !CFG.API_URL;
 var TARGET = Number(CFG.TARGET_PER_COUNTRY) || 30;
 var CC = ['VN','CN','MN','NP','ETC'];
+var KC = ['var(--k1)','var(--k2)','var(--k3)','var(--k4)','var(--k5)','var(--k6)','var(--k7)'];
 var L = {
   q1:{VN:'베트남',CN:'중국',MN:'몽골',NP:'네팔',ETC:'그 외'},
   q2:{d4:'어학연수 (D-4)',d2_ba:'학부 (D-2)',d2_ma:'석사 (D-2)',d2_phd:'박사 (D-2)',exch:'교환·방문',other:'기타'},
-  q3:{le2020:'2020 이전','2021':'2021','2022':'2022','2023':'2023','2024':'2024','2025':'2025','2026':'2026'},
-  q4:{plan:'진학할 계획이다 (D-4)',noplan:'진학 계획 없다',unsure:'아직 모르겠다',moved:'어학연수 → 학위과정으로 옮김',direct:'처음부터 학위과정'},
+  q3:{le2020:'~2020','2021':'2021','2022':'2022','2023':'2023','2024':'2024','2025':'2025','2026':'2026'},
+  q4:{moved:'어학연수 → 학위과정으로 옮김',direct:'처음부터 학위과정',plan:'학위과정 진학 계획',noplan:'진학 계획 없음',unsure:'아직 모름'},
   q5:{cost:'학비·생활비가 저렴',schol:'장학금',job:'졸업 후 한국 취업',parttime:'유학 중 아르바이트',culture:'한국 문화·한류',quality:'교육 수준',network:'가족·친구가 한국에 있음',visa:'비자 받기 쉬움',other:'기타'},
   q6:{agency:'유학원',peers:'먼저 온 친구·가족',sns:'SNS·유튜브',univ:'대학 홍보·설명회',gov:'정부 장학 (GKS 등)',school:'본국 학교·선생님',other:'기타'},
-  q7:{none:'한국만 생각했다',JP:'일본',US:'미국',AU:'호주',CN:'중국',EU:'유럽',TW:'대만',other:'기타'},
-  q8:{study:'수업·학업',cost:'학비·생활비 부담',job:'아르바이트 기회',visa:'비자·체류 절차',korean:'한국어 적응',support:'학교의 유학생 지원'},
-  q9:{kr_job:'한국에서 취업',kr_study:'한국에서 진학',home:'본국 귀국',third:'다른 나라로 이동',unsure:'아직 모르겠다',other:'기타'},
+  q7:{JP:'일본',US:'미국',AU:'호주',CN:'중국',EU:'유럽',TW:'대만',other:'기타'},
+  q8:{study:'수업·학업',cost:'학비·생활비',job:'아르바이트',visa:'비자·체류',korean:'한국어 적응',support:'학교 지원'},
+  q9:{kr_job:'한국에서 취업',kr_study:'한국에서 진학',home:'본국 귀국',third:'다른 나라로',unsure:'아직 모름',other:'기타'},
   flag:{fast:'빠름',straight:'같은 점수'}
 };
+var Q8K = ['study','cost','job','visa','korean','support'];
+var Q3K = ['le2020','2021','2022','2023','2024','2025','2026'];
 var EXPORT_COLS = ['id','submitted_at','lang','src','device','duration_sec','q1','q1_other','q2','q2_other','q3','q4','q5_1','q5_2','q5_3','q5_other','q6','q6_other','q7','q7_other','q7_why','q8_study','q8_cost','q8_job','q8_visa','q8_korean','q8_support','q9','q9_other','q9_sure','q10','q10_why','nickname','q11','flags','excluded'];
 
-var ROWS = [], OPEN = true, TOKEN = null, FILTER = 'ALL', SHOW_X = false, DEMO = false, timer = 0;
+var ROWS = [], OPEN = true, TOKEN = null, SHOW_X = false, DEMO = false, timer = 0;
+
+/* ───────── 도우미 ───────── */
 function $(id){ return document.getElementById(id); }
 function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined && text !== null) e.textContent = text; return e; }
+var NS = 'http://www.w3.org/2000/svg';
+function sv(tag, attrs, parent){ var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.append(e); return e; }
+function svgBox(w, h, label){ var s = sv('svg', {viewBox:'0 0 ' + w + ' ' + h, class:'chart', role:'img'}); if (label) s.setAttribute('aria-label', label); return s; }
+function txt(parent, x, y, s, attrs){ var t = sv('text', Object.assign({x:x, y:y}, attrs || {}), parent); t.textContent = s; return t; }
+function tip(node, s){ var t = sv('title', {}, node); t.textContent = s; }
 function color(c){ return 'var(--c-' + c + ')'; }
 function pct(a, b){ return b ? Math.round(a / b * 100) : 0; }
 function fmt1(v){ return (Math.round(v * 10) / 10).toFixed(1); }
+function mean(a){ return a.length ? a.reduce(function(s, v){ return s + v; }, 0) / a.length : null; }
+function median(a){ if (!a.length) return null; var b = a.slice().sort(function(x, y){ return x - y; }); return b[Math.floor(b.length / 2)]; }
+function dur(s){ return s === null ? '–' : Math.floor(s / 60) + '분 ' + (s % 60) + '초'; }
 function sstore(k, v){ try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { return null; } }
-
-function api(action, body){
-  return fetch(CFG.API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(Object.assign({action:action, token:TOKEN}, body || {}))})
-    .then(function(r){ return r.json(); });
+function panel(host, opts){
+  var p = el('section', 'panel' + (opts.full ? ' full' : ''));
+  var hd = el('div', 'panel-h');
+  if (opts.qn) hd.append(el('span', 'qn', opts.qn));
+  hd.append(el('h2', null, opts.title));
+  if (opts.note) hd.append(el('span', 'muted small', opts.note));
+  p.append(hd); host.append(p); return p;
 }
+function empty(p, msg){ p.append(el('p', 'empty', msg || '아직 응답이 없습니다.')); }
+function counts(rows, key, keys){ var o = {}; keys.forEach(function(k){ o[k] = 0; }); rows.forEach(function(r){ if (r[key] in o) o[r[key]]++; }); return o; }
+function nps(rows){ var v = rows.filter(function(r){ return r.q10 !== null; }); if (!v.length) return null;
+  var pro = v.filter(function(r){ return r.q10 >= 9; }).length, det = v.filter(function(r){ return r.q10 <= 6; }).length;
+  return {score:Math.round((pro - det) / v.length * 100), pro:pro, pas:v.length - pro - det, det:det, n:v.length, mean:mean(v.map(function(r){ return r.q10; }))}; }
+function legendList(items, total){
+  var ul = el('ul', 'legend');
+  items.forEach(function(it){ var li = el('li'); var s = el('span', 'sw'); s.style.background = it.color; var em = el('em'); em.append(el('b', null, String(it.v)), document.createTextNode('명 · ' + pct(it.v, total) + '%')); li.append(s, el('span', null, it.label), em); ul.append(li); });
+  return ul;
+}
+
+/* ───────── 차트 ───────── */
+// 도넛: 한 사람이 하나만 고르는 문항(전체 = 100%)
+function donut(host, items, label){
+  var total = items.reduce(function(s, it){ return s + it.v; }, 0);
+  var shown = items.filter(function(it){ return it.v > 0; });
+  var s = svgBox(160, 160, label), cx = 80, cy = 80, R = 70, r = 44, a0 = -Math.PI / 2;
+  s.style.width = '160px';
+  if (!total) sv('circle', {cx:cx, cy:cy, r:(R + r) / 2, fill:'none', stroke:'var(--track)', 'stroke-width':R - r}, s);
+  shown.forEach(function(it){
+    var a1 = a0 + it.v / total * Math.PI * 2, node;
+    if (it.v === total) node = sv('circle', {cx:cx, cy:cy, r:(R + r) / 2, fill:'none', stroke:it.color, 'stroke-width':R - r}, s);
+    else {
+      var large = a1 - a0 > Math.PI ? 1 : 0, p = function(rad, a){ return (cx + rad * Math.cos(a)).toFixed(2) + ' ' + (cy + rad * Math.sin(a)).toFixed(2); };
+      node = sv('path', {d:'M' + p(R, a0) + ' A' + R + ' ' + R + ' 0 ' + large + ' 1 ' + p(R, a1) + ' L' + p(r, a1) + ' A' + r + ' ' + r + ' 0 ' + large + ' 0 ' + p(r, a0) + ' Z', fill:it.color, stroke:'var(--surface)', 'stroke-width':2}, s);
+    }
+    tip(node, it.label + ' ' + it.v + '명 (' + pct(it.v, total) + '%)');
+    a0 = a1;
+  });
+  txt(s, cx, cy + 2, String(total), {'text-anchor':'middle', class:'strong', 'font-size':26});
+  txt(s, cx, cy + 20, '명', {'text-anchor':'middle'});
+  var d = el('div', 'duo'); d.append(s, legendList(shown.length ? shown : items, total)); host.append(d);
+}
+// 세로 막대: 순서가 있는 연도
+function columns(host, items, opts){
+  opts = opts || {};
+  var W = 460, H = 170, top = 18, bottom = 24, n = items.length, gap = 10, bw = (W - gap * (n - 1)) / n;
+  var max = Math.max.apply(null, items.map(function(it){ return it.v; }).concat([1]));
+  var s = svgBox(W, H, opts.label);
+  sv('line', {x1:0, x2:W, y1:H - bottom, y2:H - bottom, stroke:'var(--line)'}, s);
+  items.forEach(function(it, i){
+    var x = i * (bw + gap), h = (H - top - bottom) * it.v / max, y = H - bottom - h;
+    var b = sv('rect', {x:x, y:y, width:bw, height:Math.max(h, it.v ? 2 : 0), rx:4, fill:it.color || 'var(--accent)'}, s);
+    tip(b, it.label + ': ' + it.v + '명');
+    if (it.v) txt(s, x + bw / 2, y - 5, String(it.v), {'text-anchor':'middle', class:'strong'});
+    txt(s, x + bw / 2, H - 7, it.label, {'text-anchor':'middle'});
+  });
+  host.append(s);
+}
+// 와플: 100칸 중 몇 칸인지 (최대잔여법으로 반올림해 합이 100이 되게)
+function waffle(host, items){
+  var total = items.reduce(function(s, it){ return s + it.v; }, 0);
+  var cells = items.map(function(it){ var raw = total ? it.v / total * 100 : 0; return {it:it, n:Math.floor(raw), rem:raw - Math.floor(raw)}; });
+  var left = total ? 100 - cells.reduce(function(s, c){ return s + c.n; }, 0) : 0;
+  cells.slice().sort(function(a, b){ return b.rem - a.rem; }).slice(0, left).forEach(function(c){ c.n++; });
+  var g = el('div', 'waffle'); g.setAttribute('role', 'img');
+  g.setAttribute('aria-label', items.map(function(it){ return it.label + ' ' + it.v + '명'; }).join(', '));
+  cells.forEach(function(c){ for (var i = 0; i < c.n; i++){ var sq = el('i'); sq.style.background = c.it.color; sq.title = c.it.label + ' ' + c.it.v + '명'; g.append(sq); } });
+  while (g.children.length < 100) g.append(el('i'));
+  var shown = items.filter(function(it){ return it.v > 0; });
+  var d = el('div', 'duo'); d.append(g, legendList(shown.length ? shown : items, total)); host.append(d);
+  var note = el('p', 'note', '한 칸 = 응답자의 1%');
+  host.append(note);
+}
+// 트리맵: 면적 = 응답 수 (한 가지만 고르는 문항)
+function treemap(host, items){
+  var data = items.filter(function(it){ return it.v > 0; }).sort(function(a, b){ return b.v - a.v; });
+  var total = data.reduce(function(s, it){ return s + it.v; }, 0);
+  var box = el('div', 'tree'); host.append(box);
+  var W = 600, H = 230;
+  if (!total) { box.remove(); return; }
+  var items2 = data.map(function(it){ return {it:it, a:it.v / total * W * H}; });
+  function worst(row, side){ var s = 0, mx = 0, mn = Infinity; row.forEach(function(r){ s += r.a; mx = Math.max(mx, r.a); mn = Math.min(mn, r.a); }); return Math.max(side * side * mx / (s * s), s * s / (side * side * mn)); }
+  function place(row, x, y, w, h, out){
+    var s = row.reduce(function(t, r){ return t + r.a; }, 0);
+    if (w >= h) { var cw = s / h, yy = y; row.forEach(function(r){ var hh = r.a / cw; out.push({it:r.it, x:x, y:yy, w:cw, h:hh}); yy += hh; }); return [x + cw, y, w - cw, h]; }
+    var rh = s / w, xx = x; row.forEach(function(r){ var ww = r.a / rh; out.push({it:r.it, x:xx, y:y, w:ww, h:rh}); xx += ww; }); return [x, y + rh, w, h - rh];
+  }
+  var out = [], row = [], rest = items2.slice(), x = 0, y = 0, w = W, h = H;
+  while (rest.length) {
+    var side = Math.min(w, h);
+    if (!row.length || worst(row.concat([rest[0]]), side) <= worst(row, side)) row.push(rest.shift());
+    else { var r = place(row, x, y, w, h, out); x = r[0]; y = r[1]; w = r[2]; h = r[3]; row = []; }
+  }
+  if (row.length) place(row, x, y, w, h, out);
+  out.forEach(function(o){
+    var d = el('div'); d.style.left = (o.x / W * 100) + '%'; d.style.top = (o.y / H * 100) + '%'; d.style.width = (o.w / W * 100) + '%'; d.style.height = (o.h / H * 100) + '%'; d.style.background = o.it.color;
+    d.title = o.it.label + ' ' + o.it.v + '명 (' + pct(o.it.v, total) + '%)';
+    if (o.w > 70 && o.h > 44) { d.append(el('b', null, o.it.v + '명 · ' + pct(o.it.v, total) + '%'), el('span', null, o.it.label)); }
+    else if (o.w > 34 && o.h > 22) d.append(el('b', null, String(o.it.v)));
+    box.append(d);
+  });
+  host.append(legendList(data, total));
+}
+// 롤리팝: 순위 점수 비교
+function lollipop(host, items, max, colorFor){
+  var box = el('div', 'lol');
+  items.forEach(function(it){
+    var row = el('div', 'lol-row'), t = el('div', 'lol-t'), stem = el('span', 'stem'), dot = el('span', 'dot');
+    var f = max ? it.v / max * 100 : 0;
+    stem.style.width = f + '%'; stem.style.background = colorFor; dot.style.left = f + '%'; dot.style.background = colorFor;
+    t.title = it.label + ': ' + it.v + '점'; t.append(stem, dot);
+    var v = el('div', 'val'); v.append(el('b', null, it.v + '점'), document.createTextNode(' · 1순위 ' + it.first));
+    row.append(el('div', 'lab', it.label), t, v); box.append(row);
+  });
+  host.append(box);
+}
+// 가로 막대: 여러 개 고를 수 있는 문항 (% = 응답자 중 고른 비율)
+function hbars(host, items, base, colorFor){
+  var box = el('div', 'hb');
+  items.forEach(function(it){
+    var row = el('div', 'hb-row'), t = el('div', 'hb-t'), s = el('span');
+    s.style.width = pct(it.v, base) + '%'; s.style.background = colorFor; t.append(s); t.title = it.label + ' ' + it.v + '명';
+    var v = el('div', 'val'); v.append(el('b', null, it.v + '명'), document.createTextNode(' · ' + pct(it.v, base) + '%'));
+    row.append(el('div', 'lab', it.label), t, v); box.append(row);
+  });
+  host.append(box);
+}
+// 100% 누적 막대
+function stack100(host, items){
+  var total = items.reduce(function(s, it){ return s + it.v; }, 0);
+  var shown = items.filter(function(it){ return it.v > 0; });
+  var bar = el('div', 'stack'); bar.setAttribute('role', 'img');
+  bar.setAttribute('aria-label', shown.map(function(it){ return it.label + ' ' + it.v + '명'; }).join(', '));
+  shown.forEach(function(it){ var p = pct(it.v, total), s = el('span', null, p >= 12 ? p + '%' : ''); s.style.flex = it.v + ' 0 0'; s.style.background = it.color; s.title = it.label + ' ' + it.v + '명 (' + p + '%)'; bar.append(s); });
+  if (!shown.length) { var e = el('span'); e.style.flex = '1'; e.style.background = 'var(--track)'; bar.append(e); }
+  host.append(bar, legendList(shown, total));
+}
+// 레이더: 같은 1~5점 척도의 여러 항목 (국가 vs 전체 평균)
+function radar(host, series){
+  var W = 360, H = 270, cx = 180, cy = 132, R = 92, n = Q8K.length;
+  var s = svgBox(W, H, '만족도 레이더');
+  function pt(i, v){ var a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + Math.cos(a) * R * v / 5, cy + Math.sin(a) * R * v / 5]; }
+  for (var lv = 1; lv <= 5; lv++) {
+    sv('polygon', {points:Q8K.map(function(k, i){ return pt(i, lv).join(','); }).join(' '), fill:'none', stroke:'var(--line)', 'stroke-width':lv === 5 ? 1.5 : 1}, s);
+    txt(s, cx + 3, cy - R * lv / 5 + 4, String(lv), {'font-size':9.5});
+  }
+  Q8K.forEach(function(k, i){
+    var e = pt(i, 5); sv('line', {x1:cx, y1:cy, x2:e[0], y2:e[1], stroke:'var(--line)'}, s);
+    var l = pt(i, 5.95), c = Math.cos(-Math.PI / 2 + i * 2 * Math.PI / n);
+    txt(s, l[0], l[1] + 4, L.q8[k], {'text-anchor':Math.abs(c) < 0.2 ? 'middle' : c > 0 ? 'start' : 'end', class:'strong', 'font-size':11.5});
+  });
+  series.forEach(function(se){
+    if (se.values.some(function(v){ return v === null; })) return;
+    var pts = se.values.map(function(v, i){ return pt(i, v).join(','); }).join(' ');
+    sv('polygon', {points:pts, fill:se.fill || 'none', 'fill-opacity':se.fill ? 0.22 : 0, stroke:se.color, 'stroke-width':2.2, 'stroke-dasharray':se.dash || ''}, s);
+    se.values.forEach(function(v, i){ var p = pt(i, v); var c = sv('circle', {cx:p[0], cy:p[1], r:se.dash ? 2.5 : 4, fill:se.color}, s); tip(c, se.name + ' · ' + L.q8[Q8K[i]] + ' ' + fmt1(v)); });
+  });
+  host.append(s);
+  var ul = el('ul', 'legend'); ul.style.flexDirection = 'row'; ul.style.flexWrap = 'wrap'; ul.style.gap = '6px 16px';
+  series.forEach(function(se){ var li = el('li'); li.style.display = 'flex'; li.style.gap = '6px'; var sw = el('span', 'sw'); sw.style.background = se.color; if (se.dash) { sw.style.background = 'none'; sw.style.border = '2px dashed ' + se.color; } li.append(sw, el('span', null, se.name)); ul.append(li); });
+  host.append(ul);
+}
+// 게이지: NPS (-100 ~ +100)
+function gauge(host, n){
+  var W = 240, H = 150, cx = 120, cy = 120, R = 92, sw = 20;
+  var s = svgBox(W, H, 'NPS ' + (n ? n.score : '없음')); s.style.maxWidth = '300px';
+  function ang(v){ return Math.PI + (v + 100) / 200 * Math.PI; }
+  function arc(v0, v1, col){ var a0 = ang(v0), a1 = ang(v1); sv('path', {d:'M' + (cx + R * Math.cos(a0)) + ' ' + (cy + R * Math.sin(a0)) + ' A' + R + ' ' + R + ' 0 0 1 ' + (cx + R * Math.cos(a1)) + ' ' + (cy + R * Math.sin(a1)), fill:'none', stroke:col, 'stroke-width':sw}, s); }
+  arc(-100, 0, 'var(--coral)'); arc(0, 30, 'var(--sun)'); arc(30, 100, 'var(--accent)');
+  if (n) { var a = ang(n.score); sv('line', {x1:cx, y1:cy, x2:cx + (R - 4) * Math.cos(a), y2:cy + (R - 4) * Math.sin(a), stroke:'var(--ink)', 'stroke-width':3, 'stroke-linecap':'round'}, s); sv('circle', {cx:cx, cy:cy, r:6, fill:'var(--ink)'}, s); }
+  txt(s, cx - R, cy + 18, '-100', {'text-anchor':'middle'}); txt(s, cx, cy - R - 14, '0', {'text-anchor':'middle'}); txt(s, cx + R, cy + 18, '+100', {'text-anchor':'middle'});
+  txt(s, cx, cy - 28, n ? (n.score > 0 ? '+' : '') + n.score : '–', {'text-anchor':'middle', class:'strong', 'font-size':30});
+  host.append(s);
+}
+// 0~10점 분포
+function histo(host, rows){
+  var items = []; for (var i = 0; i <= 10; i++) { var v = rows.filter(function(r){ return r.q10 === i; }).length; items.push({label:String(i), v:v, color:i <= 6 ? 'var(--coral)' : i <= 8 ? 'var(--sun)' : 'var(--accent)'}); }
+  columns(host, items, {label:'추천 점수 분포'});
+}
+// 누적 응답 추이 (국가별 선)
+function cumLine(host, rows){
+  var days = rows.map(function(r){ return r.submitted_at.slice(0, 10); }).filter(Boolean).sort();
+  if (!days.length) return empty(host);
+  var seq = [], cur = new Date(days[0] + 'T00:00:00Z'), end = new Date(days[days.length - 1] + 'T00:00:00Z');
+  while (cur <= end && seq.length < 120) { seq.push(cur.toISOString().slice(0, 10)); cur = new Date(cur.getTime() + 86400000); }
+  if (seq.length === 1) seq.unshift(new Date(new Date(seq[0] + 'T00:00:00Z').getTime() - 86400000).toISOString().slice(0, 10));
+  var W = 640, H = 230, l = 30, r = 62, t = 12, b = 26;
+  var series = CC.map(function(c){ var acc = 0; return {c:c, pts:seq.map(function(d){ acc += rows.filter(function(x){ return x.q1 === c && x.submitted_at.slice(0, 10) === d; }).length; return acc; })}; }).filter(function(se){ return se.pts[se.pts.length - 1] > 0; });
+  var max = Math.max.apply(null, series.map(function(se){ return se.pts[se.pts.length - 1]; }).concat([TARGET]));
+  var X = function(i){ return l + i * (W - l - r) / (seq.length - 1); }, Y = function(v){ return H - b - v / max * (H - t - b); };
+  var s = svgBox(W, H, '국가별 누적 응답 수');
+  [0, Math.round(max / 2), max].forEach(function(v){ sv('line', {x1:l, x2:W - r, y1:Y(v), y2:Y(v), stroke:'var(--line)'}, s); txt(s, l - 6, Y(v) + 4, String(v), {'text-anchor':'end'}); });
+  if (TARGET <= max) { sv('line', {x1:l, x2:W - r, y1:Y(TARGET), y2:Y(TARGET), stroke:'var(--ink)', 'stroke-dasharray':'4 4', opacity:.5}, s); txt(s, W - r + 4, Y(TARGET) + 4, '목표 ' + TARGET); }
+  [0, Math.floor((seq.length - 1) / 2), seq.length - 1].filter(function(v, i, a){ return a.indexOf(v) === i; }).forEach(function(i){ txt(s, X(i), H - 8, seq[i].slice(5).replace('-', '/'), {'text-anchor':i === 0 ? 'start' : i === seq.length - 1 ? 'end' : 'middle'}); });
+  var labels = [];
+  series.forEach(function(se){
+    sv('polyline', {points:se.pts.map(function(v, i){ return X(i) + ',' + Y(v); }).join(' '), fill:'none', stroke:color(se.c), 'stroke-width':2.5, 'stroke-linejoin':'round'}, s);
+    var lv = se.pts[se.pts.length - 1]; var dot = sv('circle', {cx:X(seq.length - 1), cy:Y(lv), r:4, fill:color(se.c)}, s); tip(dot, L.q1[se.c] + ' ' + lv + '명');
+    labels.push({c:se.c, y:Y(lv), v:lv});
+  });
+  labels.sort(function(a, b){ return a.y - b.y; });
+  for (var i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 13) labels[i].y = labels[i - 1].y + 13;
+  var over = labels.length ? labels[labels.length - 1].y - (H - b) : 0;
+  if (over > 0) labels.forEach(function(lb){ lb.y -= over; });
+  labels.forEach(function(lb){ txt(s, W - r + 8, lb.y + 4, L.q1[lb.c] + ' ' + lb.v, {fill:color(lb.c), 'font-weight':700}); });
+  host.append(s);
+}
+// 히트맵: 국가 × 만족도 항목 (3점 기준 위는 초록, 아래는 빨강)
+function heatmap(host, rows){
+  var wrap = el('div', 'scroll'), t = el('table', 'heat'), hr = el('tr');
+  hr.append(el('th', null, '국가'));
+  Q8K.forEach(function(k){ hr.append(el('th', null, L.q8[k])); });
+  hr.append(el('th', null, '응답'));
+  var th = el('thead'); th.append(hr); t.append(th);
+  var tb = el('tbody');
+  [['ALL', '전체']].concat(CC.map(function(c){ return [c, L.q1[c]]; })).forEach(function(x){
+    var rs = x[0] === 'ALL' ? rows : rows.filter(function(r){ return r.q1 === x[0]; });
+    if (!rs.length) return;
+    var tr = el('tr'), first = el('td');
+    if (x[0] !== 'ALL') { var sw = el('span', 'sw'); sw.style.background = color(x[0]); sw.style.marginRight = '6px'; first.append(sw); }
+    first.append(document.createTextNode(x[1])); tr.append(first);
+    Q8K.forEach(function(k){
+      var m = mean(rs.map(function(r){ return r['q8_' + k]; }).filter(function(v){ return v !== null; }));
+      var td = el('td', null, m === null ? '–' : fmt1(m));
+      if (m !== null) { var d = m - 3, amt = Math.min(Math.abs(d) / 2, 1) * 70 + 8; td.style.background = 'color-mix(in srgb, ' + (d >= 0 ? 'var(--accent)' : 'var(--coral)') + ' ' + amt.toFixed(0) + '%, var(--surface))'; }
+      td.title = x[1] + ' · ' + L.q8[k] + ' 평균 ' + (m === null ? '–' : fmt1(m));
+      tr.append(td);
+    });
+    tr.append(el('td', 'n', rs.length + '명')); tb.append(tr);
+  });
+  t.append(tb); wrap.append(t); host.append(wrap);
+  var sc = el('div', 'scalebar'); sc.append(document.createTextNode('1점'), el('i'), document.createTextNode('5점 · 가운데(흰색) = 3점 보통')); host.append(sc);
+}
+// 국가별 NPS 비교 (0을 가운데 둔 롤리팝)
+function npsCompare(host, rows){
+  var box = el('div', 'lol'), any = false;
+  [['ALL', '전체']].concat(CC.map(function(c){ return [c, L.q1[c]]; })).forEach(function(x){
+    var rs = x[0] === 'ALL' ? rows : rows.filter(function(r){ return r.q1 === x[0]; });
+    var n = nps(rs); if (!n) return; any = true;
+    var row = el('div', 'lol-row'), t = el('div', 'lol-t'), stem = el('span', 'stem'), dot = el('span', 'dot'), mid = el('span', 'mid');
+    var col = x[0] === 'ALL' ? 'var(--ink)' : color(x[0]), pos = 50 + n.score / 2;
+    stem.style.left = Math.min(50, pos) + '%'; stem.style.width = Math.abs(n.score) / 2 + '%'; stem.style.background = col;
+    dot.style.left = pos + '%'; dot.style.background = col; t.append(stem, mid, dot);
+    t.title = x[1] + ' NPS ' + n.score + ' (추천 ' + n.pro + ' · 중립 ' + n.pas + ' · 비추천 ' + n.det + ')';
+    var v = el('div', 'val'); v.append(el('b', null, (n.score > 0 ? '+' : '') + n.score), document.createTextNode(' · ' + n.n + '명'));
+    row.append(el('div', 'lab', x[1]), t, v); box.append(row);
+  });
+  if (!any) return empty(host);
+  host.append(box, el('p', 'note', '가운데 선 = 0. NPS = 9~10점 비율 − 0~6점 비율. 응답이 적으면 한 명에도 크게 움직입니다.'));
+}
+function quotes(host, rows, key, metaOf){
+  var items = rows.filter(function(r){ return r[key]; });
+  if (!items.length) return empty(host, '아직 적힌 내용이 없습니다.');
+  var ul = el('ul', 'quotes');
+  items.slice(-80).reverse().forEach(function(r){ var li = el('li', null, String(r[key])); li.style.borderLeftColor = color(r.q1); li.append(el('small', null, metaOf(r))); ul.append(li); });
+  host.append(ul);
+}
+function kpis(host, list){
+  var k = el('section', 'kpis');
+  list.forEach(function(x){ var t = el('div', 'kpi'); t.append(el('span', 'lbl', x[0]), el('span', 'val num', String(x[1])), el('span', 'sub', x[2])); k.append(t); });
+  host.append(k);
+}
+function table(host, rows){
+  var wrap = el('div', 'tablewrap'), t = el('table', 'list'), hr = el('tr');
+  ['제출 시각','이름','국가','과정','입국','소요','추천','언어','경로','주의',''].forEach(function(h){ hr.append(el('th', null, h)); });
+  var th = el('thead'); th.append(hr); t.append(th);
+  var tb = el('tbody');
+  rows.slice(-300).reverse().forEach(function(r){
+    var tr = el('tr', r.excluded ? 'x' : '');
+    var c1 = el('td'); var sw = el('span', 'sw'); sw.style.background = color(r.q1); sw.style.marginRight = '6px'; c1.append(sw, document.createTextNode(L.q1[r.q1] + (r.q1_other ? ' (' + r.q1_other + ')' : '')));
+    var fl = el('td'); r._flags.forEach(function(k){ fl.append(el('span', 'flagtag', L.flag[k] || k)); });
+    var act = el('td'), b = el('button', 'linkbtn', r.excluded ? '되돌리기' : '제외'); b.type = 'button'; b.addEventListener('click', function(){ toggleExclude(r); }); act.append(b);
+    tr.append(el('td', 'num', r.submitted_at.replace('T', ' ').slice(5, 16)), el('td', r.nickname ? null : 'muted', r.nickname || '–'), c1, el('td', null, L.q2[r.q2] || r.q2), el('td', 'num', L.q3[r.q3] || r.q3),
+      el('td', 'num', r.duration_sec === null ? '–' : r.duration_sec + '초'), el('td', 'num', r.q10 === null ? '–' : String(r.q10)), el('td', null, r.lang), el('td', null, r.src || '–'), fl, act);
+    tb.append(tr);
+  });
+  if (!tb.children.length) { var e = el('tr'), td = el('td', 'muted', '아직 응답이 없습니다.'); td.colSpan = 11; e.append(td); tb.append(e); }
+  t.append(tb); wrap.append(t); host.append(wrap);
+}
+
+/* ───────── 데이터 ───────── */
 function norm(r){
   var o = Object.assign({}, r);
   ['duration_sec','q8_study','q8_cost','q8_job','q8_visa','q8_korean','q8_support','q9_sure','q10'].forEach(function(k){ o[k] = (o[k] === '' || o[k] === null || o[k] === undefined) ? null : Number(o[k]); });
-  ['q1','q2','q3','q4','q5_1','q5_2','q5_3','q6','q7','q9','lang','src','flags','submitted_at','id','nickname','q11'].forEach(function(k){ o[k] = o[k] === null || o[k] === undefined ? '' : String(o[k]); });
+  ['q1','q2','q3','q4','q5_1','q5_2','q5_3','q6','q7','q9','lang','src','flags','submitted_at','id','nickname','q11','q7_why','q10_why','q1_other'].forEach(function(k){ o[k] = o[k] === null || o[k] === undefined ? '' : String(o[k]); });
+  o.submitted_at = o.submitted_at.replace(' ', 'T').replace(/T(\d):/, 'T0$1:');
   if (!L.q1[o.q1]) o.q1 = 'ETC';
   o.excluded = String(o.excluded || '') === '1' || o.excluded === true;
   o._flags = o.flags ? o.flags.split(',').filter(Boolean) : [];
   o._q7 = o.q7 ? o.q7.split('|').filter(Boolean) : [];
   return o;
 }
+function valid(){ return ROWS.filter(function(r){ return SHOW_X || !r.excluded; }); }
 
-/* ───────────── 예시 데이터 (미리보기 전용) ───────────── */
 function demoRows(){
-  var seed = 20261111;
-  function rnd(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; var x = Math.imul(seed ^ seed >>> 15, 1 | seed); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; }
-  function pickW(o){ var ks = Object.keys(o), s = 0, i; for (i = 0; i < ks.length; i++) s += o[ks[i]]; var r = rnd() * s; for (i = 0; i < ks.length; i++) { r -= o[ks[i]]; if (r <= 0) return ks[i]; } return ks[ks.length - 1]; }
-  function clamp(v, a, b){ return Math.max(a, Math.min(b, Math.round(v))); }
-  var plan = {VN:34, CN:26, MN:14, NP:19, ETC:7};
-  var why5 = {
-    VN:{cost:3,schol:2,job:4,parttime:4,culture:3,quality:2,network:3,visa:1},
-    CN:{cost:2,schol:1,job:1,parttime:1,culture:4,quality:4,network:2,visa:2},
-    MN:{cost:2,schol:3,job:3,parttime:2,culture:3,quality:3,network:3,visa:1},
-    NP:{cost:2,schol:2,job:5,parttime:5,culture:1,quality:2,network:4,visa:3},
-    ETC:{cost:1,schol:4,job:2,parttime:1,culture:4,quality:4,network:1,visa:1}
-  };
-  var path6 = {VN:{agency:5,peers:4,sns:3,univ:1,gov:1,school:1},CN:{agency:3,peers:2,sns:3,univ:3,gov:1,school:2},MN:{agency:2,peers:4,sns:2,univ:2,gov:3,school:1},NP:{agency:6,peers:5,sns:2,univ:1,gov:1,school:1},ETC:{agency:1,peers:2,sns:3,univ:3,gov:4,school:1}};
-  var yearW = {VN:{le2020:2,'2021':2,'2022':3,'2023':5,'2024':7,'2025':8,'2026':3},CN:{le2020:5,'2021':4,'2022':5,'2023':5,'2024':4,'2025':3,'2026':1},MN:{le2020:2,'2021':2,'2022':3,'2023':4,'2024':5,'2025':4,'2026':2},NP:{le2020:0.3,'2021':0.3,'2022':0.6,'2023':3,'2024':7,'2025':9,'2026':4},ETC:{le2020:1,'2021':1,'2022':2,'2023':3,'2024':3,'2025':3,'2026':1}};
-  var whys7 = ['학비가 훨씬 저렴했다','먼저 온 선배가 추천했다','아르바이트를 할 수 있어서','한국어를 이미 배우고 있었다','장학금 조건이 좋았다','집에서 가까워서'];
-  var names = ['Minh','Bat','Anu','Sita','Lin','Hoa','Tuya','Ram',''];
-  var fb = ['3번 문항이 조금 헷갈렸어요','막대를 움직이는 게 휴대폰에서 어려웠어요','몽골어 버전이 있으면 좋겠어요','질문이 짧아서 좋았어요'];
-  var whys10 = ['학교 지원이 잘 되어 있다','생활비가 생각보다 많이 든다','취업 정보가 부족하다','한국어가 어렵지만 배울 가치가 있다','비자 연장 절차가 복잡하다','친구를 많이 사귀었다'];
-  var rows = [], n = 0, base = new Date(2026, 10, 2).getTime();
+  var seed = 20261125;
+  function rnd(){ seed = seed + 0x6D2B79F5 | 0; var x = Math.imul(seed ^ seed >>> 15, 1 | seed); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; }
+  function pick(o){ var ks = Object.keys(o), s = 0, i; for (i = 0; i < ks.length; i++) s += o[ks[i]]; var r = rnd() * s; for (i = 0; i < ks.length; i++) { r -= o[ks[i]]; if (r <= 0) return ks[i]; } return ks[ks.length - 1]; }
+  function cl(v, a, b){ return Math.max(a, Math.min(b, Math.round(v))); }
+  var plan = {VN:34, CN:22, MN:14, NP:26, ETC:6}, rows = [], n = 0, base = new Date(2026, 10, 12).getTime();
+  var why = {VN:{cost:3,job:4,parttime:4,culture:3,quality:2,network:3,schol:2,visa:1},CN:{culture:4,quality:4,schol:2,cost:2,job:1,network:2,visa:1,parttime:1},MN:{schol:3,job:3,culture:3,quality:3,network:3,cost:2,parttime:2,visa:1},NP:{job:5,parttime:5,network:4,visa:3,cost:2,quality:2,schol:1,culture:1},ETC:{schol:4,culture:4,quality:4,cost:1,job:2,parttime:1,network:1,visa:1}};
   CC.forEach(function(c){
     for (var i = 0; i < plan[c]; i++) {
-      var q2 = pickW(c === 'NP' ? {d4:6,d2_ba:3,d2_ma:1} : c === 'CN' ? {d4:1,d2_ba:4,d2_ma:3,d2_phd:2,exch:1} : {d4:4,d2_ba:4,d2_ma:2,d2_phd:0.5,exch:0.5});
-      var q4 = q2 === 'd4' ? pickW({plan:6,noplan:1,unsure:2}) : /^d2/.test(q2) ? pickW(c === 'CN' ? {moved:2,direct:5} : {moved:5,direct:3}) : pickW({plan:2,noplan:3,unsure:2});
-      var w = Object.assign({}, why5[c]), q5 = [];
-      for (var k = 0; k < 3; k++) { var p = pickW(w); q5.push(p); delete w[p]; }
-      var only = rnd() < (c === 'NP' ? 0.35 : 0.5);
-      var q7 = only ? 'none' : [pickW({JP:5,US:2,AU:3,EU:2,TW:1})].concat(rnd() < 0.3 ? ['US'] : []).filter(function(v, ix, a){ return a.indexOf(v) === ix; }).join('|');
-      var bias = {VN:0.2, CN:-0.1, MN:0.1, NP:0, ETC:0.3}[c];
-      var q8 = {study:clamp(3.8 + bias + (rnd() - 0.5) * 2.4, 1, 5), cost:clamp(2.7 + bias + (rnd() - 0.5) * 2.6, 1, 5), job:clamp((c === 'NP' ? 3.6 : 3.1) + (rnd() - 0.5) * 2.6, 1, 5), visa:clamp(2.9 + (rnd() - 0.5) * 2.4, 1, 5), korean:clamp(3.2 + (rnd() - 0.5) * 2.6, 1, 5), support:clamp(3.5 + bias + (rnd() - 0.5) * 2.4, 1, 5)};
-      var q9 = pickW(c === 'NP' ? {kr_job:6,kr_study:2,home:1,third:2,unsure:2} : c === 'CN' ? {kr_job:2,kr_study:2,home:5,third:1,unsure:2} : {kr_job:4,kr_study:2,home:3,third:1,unsure:2});
-      var q10 = clamp(8 + bias * 2 + (rnd() - 0.5) * 5.4, 0, 10);
-      var dur = clamp(70 + rnd() * 220, 20, 600), flags = [];
-      if (rnd() < 0.05) { dur = clamp(18 + rnd() * 20, 10, 44); flags.push('fast'); }
-      if (rnd() < 0.04) { q8 = {study:3,cost:3,job:3,visa:3,korean:3,support:3}; flags.push('straight'); }
-      var d = new Date(base + Math.floor(rnd() * 9) * 86400000 + Math.floor(rnd() * 50000) * 1000);
-      rows.push({id:'demo' + (++n), submitted_at:d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + 'T' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':00',
-        lang:c === 'VN' ? 'vi' : c === 'CN' ? 'zh' : rnd() < 0.5 ? 'ko' : 'en', src:pickW({kakao:4,zalo:2,wechat:2,'':3}), device:rnd() < 0.8 ? 'mobile' : 'desktop', duration_sec:dur,
-        q1:c, q1_other:'', q2:q2, q2_other:'', q3:pickW(yearW[c]), q4:q4, q5_1:q5[0], q5_2:q5[1], q5_3:q5[2], q5_other:'', q6:pickW(path6[c]), q6_other:'',
-        q7:q7, q7_other:'', q7_why:(!only && rnd() < 0.45) ? whys7[Math.floor(rnd() * whys7.length)] : '',
-        q8_study:q8.study, q8_cost:q8.cost, q8_job:q8.job, q8_visa:q8.visa, q8_korean:q8.korean, q8_support:q8.support,
-        q9:q9, q9_other:'', q9_sure:q9 === 'unsure' ? '' : Math.round((30 + rnd() * 70) / 10) * 10, q10:q10, q10_why:rnd() < 0.4 ? whys10[Math.floor(rnd() * whys10.length)] : '', nickname:names[Math.floor(rnd() * names.length)], q11:rnd() < 0.12 ? fb[Math.floor(rnd() * fb.length)] : '', flags:flags.join(','), excluded:''});
+      var q2 = pick(c === 'NP' ? {d4:6,d2_ba:3,d2_ma:1} : c === 'CN' ? {d4:1,d2_ba:4,d2_ma:3,d2_phd:2} : {d4:4,d2_ba:4,d2_ma:2});
+      var q4 = q2 === 'd4' ? pick({plan:6,noplan:1,unsure:2}) : pick(c === 'CN' ? {moved:2,direct:5} : {moved:5,direct:3});
+      var w = Object.assign({}, why[c]), q5 = []; for (var k = 0; k < 3; k++) { var p = pick(w); q5.push(p); delete w[p]; }
+      var only = rnd() < 0.45, b = {VN:0.2,CN:-0.1,MN:0.1,NP:0,ETC:0.3}[c];
+      var d = new Date(base + Math.floor(rnd() * 12) * 86400000 + Math.floor(rnd() * 50000) * 1000);
+      var q9 = pick(c === 'NP' ? {kr_job:6,kr_study:2,home:1,third:2,unsure:2} : c === 'CN' ? {kr_job:2,kr_study:2,home:5,unsure:2} : {kr_job:4,kr_study:2,home:3,third:1,unsure:2});
+      rows.push({id:'demo' + (++n), submitted_at:d.toISOString().slice(0, 19), lang:'ko', src:'', device:'mobile', duration_sec:cl(70 + rnd() * 200, 20, 600),
+        q1:c, q2:q2, q3:pick(c === 'NP' ? {'2022':1,'2023':3,'2024':7,'2025':9,'2026':4} : {le2020:2,'2021':2,'2022':3,'2023':5,'2024':6,'2025':6,'2026':2}), q4:q4,
+        q5_1:q5[0], q5_2:q5[1], q5_3:q5[2], q6:pick(c === 'NP' ? {agency:6,peers:5,sns:2,univ:1} : {agency:3,peers:3,sns:3,univ:2,gov:1,school:1}),
+        q7:only ? 'none' : pick({JP:5,US:2,AU:3,EU:2,TW:1}), q7_why:!only && rnd() < 0.3 ? '학비가 훨씬 저렴했다' : '',
+        q8_study:cl(3.8 + b + (rnd() - .5) * 2.4, 1, 5), q8_cost:cl(2.7 + b + (rnd() - .5) * 2.6, 1, 5), q8_job:cl(3.2 + (rnd() - .5) * 2.6, 1, 5), q8_visa:cl(2.9 + (rnd() - .5) * 2.4, 1, 5), q8_korean:cl(3.2 + (rnd() - .5) * 2.6, 1, 5), q8_support:cl(3.5 + b + (rnd() - .5) * 2.4, 1, 5),
+        q9:q9, q9_sure:q9 === 'unsure' ? '' : Math.round((30 + rnd() * 70) / 10) * 10, q10:cl(7.6 + b * 2 + (rnd() - .5) * 5.4, 0, 10),
+        q10_why:rnd() < 0.3 ? '학교 지원이 잘 되어 있다' : '', nickname:rnd() < 0.6 ? 'user' + n : '', q11:rnd() < 0.1 ? '질문이 짧아서 좋았어요' : '', flags:'', excluded:''});
     }
   });
-  rows.sort(function(a, b){ return a.submitted_at < b.submitted_at ? -1 : 1; });
-  return rows;
+  return rows.sort(function(a, b){ return a.submitted_at < b.submitted_at ? -1 : 1; });
 }
 
-/* ───────────── 그리기 ───────────── */
-function setBusy(b){ ['btnRefresh','btnOpen','btnBackup'].forEach(function(id){ $(id).disabled = b || DEMO; }); $('btnCsv').disabled = DEMO; }
-function toast(msg){ $('toast').textContent = msg || ''; }
-function visible(){ return ROWS.filter(function(r){ return (SHOW_X || !r.excluded) && (FILTER === 'ALL' || r.q1 === FILTER); }); }
+/* ───────── 페이지: 전체 ───────── */
+function renderOverview(view){
+  var rows = valid(), all = ROWS;
+  var today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+  var n0 = nps(rows);
+  kpis(view, [
+    ['유효 응답', rows.length, '제외 ' + (all.length - ROWS.filter(function(r){ return !r.excluded; }).length) + '건은 빼고 셈'],
+    ['오늘 들어온 응답', DEMO ? '–' : rows.filter(function(r){ return r.submitted_at.slice(0, 10) === today; }).length, today],
+    ['추천 의향 (NPS)', n0 ? (n0.score > 0 ? '+' : '') + n0.score : '–', n0 ? '0~10점 평균 ' + fmt1(n0.mean) : ''],
+    ['응답 시간 중앙값', dur(median(rows.map(function(r){ return r.duration_sec; }).filter(function(v){ return v !== null; }))), '너무 짧으면 성의 없는 응답일 수 있음'],
+    ['주의 표시', rows.filter(function(r){ return r._flags.length; }).length, '빠름 또는 같은 점수']
+  ]);
 
-/** 가로 막대: counts[option][country] */
-function bars(host, opts, labelOf, rows, valuesOf, o){
-  o = o || {};
-  host.replaceChildren();
-  var counts = {}, firsts = {};
-  opts.forEach(function(k){ counts[k] = {}; firsts[k] = 0; });
-  var answered = 0;
-  rows.forEach(function(r){
-    var vals = valuesOf(r);
-    if (vals.length) answered++;
-    vals.forEach(function(v, i){ if (!counts[v[0]]) return; counts[v[0]][r.q1] = (counts[v[0]][r.q1] || 0) + v[1]; if (i === 0) firsts[v[0]]++; });
+  var cards = el('section', 'ccards'); cards.setAttribute('aria-label', '국가별 요약');
+  CC.forEach(function(c){
+    var rs = rows.filter(function(r){ return r.q1 === c; }), n = nps(rs);
+    var a = el('a', 'ccard'); a.href = '#c-' + c; a.style.setProperty('--cc', color(c));
+    var top = el('div', 'ccard-top'), nm = el('div'); nm.append(el('div', 'ccard-name', L.q1[c]), el('div', 'muted small', c === 'ETC' ? rs.length + '명' : rs.length + ' / ' + TARGET + '명'));
+    var ring = svgBox(58, 58, L.q1[c] + ' 목표 대비 ' + pct(rs.length, TARGET) + '%'); ring.setAttribute('class', 'ring');
+    var C = 2 * Math.PI * 23, f = Math.min(rs.length / TARGET, 1);
+    sv('circle', {cx:29, cy:29, r:23, fill:'none', stroke:'var(--track)', 'stroke-width':7}, ring);
+    sv('circle', {cx:29, cy:29, r:23, fill:'none', stroke:color(c), 'stroke-width':7, 'stroke-dasharray':(C * f).toFixed(1) + ' ' + C.toFixed(1), transform:'rotate(-90 29 29)', 'stroke-linecap':f > 0 && f < 1 ? 'round' : 'butt'}, ring);
+    txt(ring, 29, 33, c === 'ETC' ? String(rs.length) : pct(rs.length, TARGET) + '%', {'text-anchor':'middle', class:'strong', 'font-size':11.5});
+    top.append(nm, ring);
+    var sc = {}; rs.forEach(function(r){ [r.q5_1, r.q5_2, r.q5_3].forEach(function(v, i){ if (v) sc[v] = (sc[v] || 0) + 3 - i; }); });
+    var topWhy = Object.keys(sc).sort(function(x, y){ return sc[y] - sc[x]; })[0];
+    var dl = el('dl');
+    [['NPS', n ? (n.score > 0 ? '+' : '') + n.score : '–'], ['1위 이유', topWhy ? L.q5[topWhy] : '–'], ['한국에 남을 계획', rs.length ? pct(rs.filter(function(r){ return r.q9 === 'kr_job' || r.q9 === 'kr_study'; }).length, rs.length) + '%' : '–']].forEach(function(x){ dl.append(el('dt', null, x[0]), el('dd', null, x[1])); });
+    a.append(top, dl, el('span', 'go', '자세히 보기 →'));
+    cards.append(a);
   });
-  var list = opts.map(function(k){ var tot = 0; CC.forEach(function(c){ tot += counts[k][c] || 0; }); return {k:k, tot:tot}; });
-  if (o.sort) list.sort(function(a, b){ return b.tot - a.tot; });
-  var max = Math.max.apply(null, list.map(function(x){ return x.tot; }).concat([1]));
-  if (!answered) { host.append(el('p', 'empty', '아직 응답이 없습니다.')); return; }
-  list.forEach(function(x){
-    var row = el('div', 'bar');
-    row.append(el('div', 'bar-l', labelOf(x.k)));
-    var tr = el('div', 'bar-t');
-    CC.forEach(function(c){ var v = counts[x.k][c] || 0; if (!v) return; var s = el('span'); s.style.width = (v / max * 100) + '%'; s.style.background = color(c); s.title = L.q1[c] + ' ' + v; tr.append(s); });
-    row.append(tr);
-    var v = el('div', 'bar-v num');
-    if (o.weighted) { v.append(el('b', null, String(x.tot)), document.createTextNode('점 · 1순위 ' + firsts[x.k] + '명')); }
-    else { v.append(el('b', null, String(x.tot)), document.createTextNode('명 · ' + pct(x.tot, answered) + '%')); }
-    row.append(v);
-    host.append(row);
-  });
+  view.append(cards);
+
+  var g = el('div', 'grid'); view.append(g);
+  cumLine(panel(g, {title:'국가별 누적 응답 수', note:'점선 = 국가별 목표 ' + TARGET + '명', full:true}), rows);
+  heatmap(panel(g, {qn:'Q8', title:'국가별 만족도 평균', note:'칸 = 그 나라 응답자의 평균 점수 (1~5)', full:true}), rows);
+  npsCompare(panel(g, {qn:'Q10', title:'국가별 추천 의향 (NPS)'}), rows);
+  var p11 = panel(g, {qn:'Q11', title:'설문을 하면서 불편했던 점', note:'설문 자체를 고칠 때 참고하세요.'});
+  quotes(p11, rows, 'q11', function(r){ return (r.nickname || '이름 없음') + ' · ' + L.q1[r.q1] + ' · ' + r.submitted_at.replace('T', ' ').slice(5, 16); });
+  table(panel(g, {title:'전체 응답 목록', note:'주의 표시: 빠름 = 45초 안에 끝냄 · 같은 점수 = 만족도 6항목이 모두 같음. 테스트 응답은 ‘제외’를 누르세요.', full:true}), ROWS);
 }
 
-function draw(){
-  var all = ROWS, valid = ROWS.filter(function(r){ return !r.excluded; }), rows = visible();
+/* ───────── 페이지: 국가 ───────── */
+function renderCountry(view, c){
+  var rows = valid().filter(function(r){ return r.q1 === c; }), allRows = valid();
+  var head = el('div', 'ctitle'), flag = el('span', 'flag'); flag.style.background = color(c);
+  var hx = el('div'); hx.append(el('h1', null, L.q1[c]), el('div', 'muted small', rows.length + '명 응답' + (c === 'ETC' ? '' : ' · 목표 ' + TARGET + '명')));
+  head.append(flag, hx);
+  if (c !== 'ETC' && rows.length < TARGET) head.append(el('span', 'badge', '응답 ' + TARGET + '명 미만 · 참고용'));
+  view.append(head);
+  if (!rows.length) { var p = el('section', 'panel'); empty(p, L.q1[c] + ' 응답이 아직 없습니다. 이 나라 친구들에게 링크를 공유해 보세요.'); view.append(p); pager(view, c); return; }
+
+  var n = nps(rows), stay = rows.filter(function(r){ return r.q9 === 'kr_job' || r.q9 === 'kr_study'; }).length;
+  kpis(view, [
+    ['응답 수', rows.length, c === 'ETC' ? '' : '목표 대비 ' + pct(rows.length, TARGET) + '%'],
+    ['추천 의향 (NPS)', n ? (n.score > 0 ? '+' : '') + n.score : '–', n ? '추천 ' + n.pro + ' · 중립 ' + n.pas + ' · 비추천 ' + n.det : ''],
+    ['한국에 남을 계획', pct(stay, rows.length) + '%', '취업 또는 진학 ' + stay + '명'],
+    ['응답 시간 중앙값', dur(median(rows.map(function(r){ return r.duration_sec; }).filter(function(v){ return v !== null; }))), '']
+  ]);
+  var g = el('div', 'grid'); view.append(g);
+  var cc = color(c);
+
+  var c2 = counts(rows, 'q2', Object.keys(L.q2));
+  donut(panel(g, {qn:'Q2', title:'현재 과정 (체류자격)'}), Object.keys(L.q2).map(function(k, i){ return {label:L.q2[k], v:c2[k], color:KC[i]}; }), '현재 과정');
+
+  var c3 = counts(rows, 'q3', Q3K);
+  columns(panel(g, {qn:'Q3', title:'처음 입국한 해', note:'막대 = 그 해에 처음 온 응답자 수'}), Q3K.map(function(k){ return {label:L.q3[k], v:c3[k], color:cc}; }), {label:'입국 연도'});
+
+  var q4k = ['moved','direct','plan','noplan','unsure'], c4 = counts(rows, 'q4', q4k);
+  waffle(panel(g, {qn:'Q4', title:'어학연수 → 학위과정', note:'학위과정 학생: 어학연수로 시작했는지 · 어학연수·기타 학생: 진학 계획'}), q4k.map(function(k, i){ return {label:L.q4[k], v:c4[k], color:KC[i]}; }));
+
+  var c6 = counts(rows, 'q6', Object.keys(L.q6));
+  var p6 = panel(g, {qn:'Q6', title:'가장 큰 영향을 준 정보 경로', note:'면적 = 응답 수'});
+  treemap(p6, Object.keys(L.q6).map(function(k, i){ return {label:L.q6[k], v:c6[k], color:KC[i]}; }));
+
+  var sc = {}, first = {}; Object.keys(L.q5).forEach(function(k){ sc[k] = 0; first[k] = 0; });
+  rows.forEach(function(r){ [r.q5_1, r.q5_2, r.q5_3].forEach(function(v, i){ if (v in sc) { sc[v] += 3 - i; if (i === 0) first[v]++; } }); });
+  var it5 = Object.keys(L.q5).map(function(k){ return {label:L.q5[k], v:sc[k], first:first[k] + '명'}; }).filter(function(it){ return it.v > 0; }).sort(function(a, b){ return b.v - a.v; });
+  var p5 = panel(g, {qn:'Q5', title:'한국을 고른 이유', note:'점수 = 1순위 3점 + 2순위 2점 + 3순위 1점. 막대 끝 = 가능한 최고점 (' + rows.length * 3 + '점, 모두가 1순위로 꼽은 경우)'});
+  if (it5.length) lollipop(p5, it5, rows.length * 3, cc); else empty(p5);
+
+  var only = rows.filter(function(r){ return r.q7 === 'none'; }).length, c7 = {};
+  Object.keys(L.q7).forEach(function(k){ c7[k] = 0; }); rows.forEach(function(r){ r._q7.forEach(function(k){ if (k in c7) c7[k]++; }); });
+  var p7 = panel(g, {qn:'Q7', title:'함께 고민한 나라', note:'여러 개 선택 가능 · % = ' + L.q1[c] + ' 응답자 ' + rows.length + '명 중 고른 비율'});
+  stack100(p7, [{label:'한국만 생각했다', v:only, color:'var(--k1)'}, {label:'다른 나라도 고민했다', v:rows.length - only, color:'var(--k7)'}]);
+  var it7 = Object.keys(L.q7).map(function(k){ return {label:L.q7[k], v:c7[k]}; }).filter(function(it){ return it.v > 0; }).sort(function(a, b){ return b.v - a.v; });
+  if (it7.length) hbars(p7, it7, rows.length, cc);
+
+  var p8 = panel(g, {qn:'Q8', title:'만족도 (1~5점)', note:'실선 = ' + L.q1[c] + ' 평균 · 점선 = 전체 평균'});
+  var avg = function(rs){ return Q8K.map(function(k){ return mean(rs.map(function(r){ return r['q8_' + k]; }).filter(function(v){ return v !== null; })); }); };
+  radar(p8, [{name:'전체 평균 (' + allRows.length + '명)', values:avg(allRows), color:'var(--muted)', dash:'5 4'}, {name:L.q1[c] + ' (' + rows.length + '명)', values:avg(rows), color:cc, fill:cc}]);
+
+  var c9 = counts(rows, 'q9', Object.keys(L.q9));
+  var p9 = panel(g, {qn:'Q9', title:'졸업 후 계획'});
+  stack100(p9, Object.keys(L.q9).map(function(k, i){ return {label:L.q9[k], v:c9[k], color:KC[i]}; }));
+  var sure = rows.map(function(r){ return r.q9_sure; }).filter(function(v){ return v !== null; });
+  if (sure.length) p9.append(el('p', 'note', '계획을 정한 ' + sure.length + '명의 확신 정도 평균: ' + Math.round(mean(sure)) + '%'));
+
+  var p10 = panel(g, {qn:'Q10', title:'추천 의향', note:'NPS = 9~10점 비율 − 0~6점 비율'});
+  gauge(p10, n); histo(p10, rows);
+
+  quotes(panel(g, {qn:'Q7 · 주관식', title:'그래도 한국을 고른 결정적 이유'}), rows, 'q7_why', function(r){ return (r.nickname || '이름 없음') + ' · 고민한 나라: ' + r._q7.map(function(k){ return L.q7[k] || k; }).join(', '); });
+  quotes(panel(g, {qn:'Q10 · 주관식', title:'추천 점수의 이유'}), rows, 'q10_why', function(r){ return (r.nickname || '이름 없음') + ' · 추천 ' + r.q10 + '점'; });
+  quotes(panel(g, {qn:'Q11', title:'설문을 하면서 불편했던 점', full:true}), rows, 'q11', function(r){ return (r.nickname || '이름 없음') + ' · ' + r.submitted_at.replace('T', ' ').slice(5, 16); });
+  table(panel(g, {title:L.q1[c] + ' 응답 목록', full:true}), ROWS.filter(function(r){ return r.q1 === c; }));
+  pager(view, c);
+}
+function pager(view, c){
+  var i = CC.indexOf(c), nav = el('div', 'pager');
+  var back = el('a', 'tab', '← 전체 보기'); back.href = '#overview'; nav.append(back);
+  if (i < CC.length - 1) { var nx = el('a', 'tab', L.q1[CC[i + 1]] + ' →'); nx.href = '#c-' + CC[i + 1]; nav.append(nx); }
+  view.append(nav);
+}
+
+/* ───────── 화면 전환 ───────── */
+function currentRoute(){ var h = (location.hash || '').replace('#', ''); var m = /^c-(VN|CN|MN|NP|ETC)$/.exec(h); return m ? m[1] : 'overview'; }
+function draw(keepScroll){
+  var y = window.scrollY, route = currentRoute(), rows = valid();
   $('statePill').className = 'pill ' + (DEMO ? 'demo' : OPEN ? 'open' : 'closed');
   $('statePill').textContent = DEMO ? '예시 데이터 · 실제 응답이 아닙니다' : OPEN ? '설문 진행 중' : '설문 마감됨';
   $('btnOpen').textContent = OPEN ? '설문 닫기' : '설문 다시 열기';
-
-  // 요약
-  var today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
-  var durs = valid.map(function(r){ return r.duration_sec; }).filter(function(v){ return v !== null; }).sort(function(a, b){ return a - b; });
-  var med = durs.length ? durs[Math.floor(durs.length / 2)] : null;
-  var flagged = valid.filter(function(r){ return r._flags.length; }).length;
-  var k = $('kpis'); k.replaceChildren();
-  [['전체 응답', all.length, '제외 ' + (all.length - valid.length) + '건 포함'],
-   ['유효 응답', valid.length, '집계에 쓰는 응답'],
-   ['오늘 들어온 응답', DEMO ? '–' : valid.filter(function(r){ return r.submitted_at.slice(0, 10) === today; }).length, today],
-   ['응답 시간 중앙값', med === null ? '–' : Math.floor(med / 60) + '분 ' + (med % 60) + '초', '너무 짧으면 성의 없는 응답일 수 있음'],
-   ['주의 표시', flagged, '빠름 또는 같은 점수']].forEach(function(x){
-    var t = el('div', 'kpi'); t.append(el('span', 'lbl', x[0]), el('span', 'val num', String(x[1])), el('span', 'sub', x[2])); k.append(t);
+  var nav = $('navbar'); nav.replaceChildren();
+  [['overview', '전체', rows.length]].concat(CC.map(function(c){ return [c, L.q1[c], rows.filter(function(r){ return r.q1 === c; }).length]; })).forEach(function(x){
+    var a = el('a', 'tab'); a.href = x[0] === 'overview' ? '#overview' : '#c-' + x[0];
+    if (x[0] !== 'overview') { var s = el('span', 'sw'); s.style.background = color(x[0]); a.append(s); }
+    a.append(document.createTextNode(x[1] + ' '), el('b', 'num', String(x[2])));
+    if (route === x[0]) a.setAttribute('aria-current', 'page');
+    nav.append(a);
   });
-
-  // 국가 필터
-  var f = $('filters'); f.replaceChildren();
-  [['ALL', '전체']].concat(CC.map(function(c){ return [c, L.q1[c]]; })).forEach(function(x){
-    var b = el('button', 'chip'); b.type = 'button'; b.setAttribute('aria-pressed', String(FILTER === x[0]));
-    if (x[0] !== 'ALL') { var s = el('span', 'sw'); s.style.background = color(x[0]); b.append(s); }
-    b.append(document.createTextNode(x[1]));
-    b.addEventListener('click', function(){ FILTER = x[0]; draw(); });
-    f.append(b);
-  });
-  var tg = el('label', 'toggle'); var cb = el('input'); cb.type = 'checkbox'; cb.id = 'showX'; cb.checked = SHOW_X;
-  cb.addEventListener('change', function(){ SHOW_X = cb.checked; draw(); });
-  tg.append(cb, document.createTextNode('제외한 응답도 집계에 넣기')); f.append(tg);
-
-  // 국가별 목표
-  var q = $('pQuota'); q.replaceChildren();
-  $('quotaNote').textContent = '목표: 4개국 각 ' + TARGET + '명. 그보다 적으면 국가 간 비교는 참고용입니다.';
-  var qmax = Math.max.apply(null, CC.map(function(c){ return valid.filter(function(r){ return r.q1 === c; }).length; }).concat([TARGET]));
-  CC.forEach(function(c){
-    var n = valid.filter(function(r){ return r.q1 === c; }).length;
-    var row = el('div', 'bar'); var lab = el('div', 'bar-l', L.q1[c]);
-    if (c !== 'ETC' && n < TARGET) lab.append(el('span', 'tag', '참고용'));
-    var tr = el('div', 'bar-t'); var s = el('span'); s.style.width = (n / qmax * 100) + '%'; s.style.background = color(c); tr.append(s);
-    if (c !== 'ETC') { var m = el('i', 'mark'); m.style.left = (TARGET / qmax * 100) + '%'; tr.append(m); }
-    var v = el('div', 'bar-v num'); v.append(el('b', null, String(n)), document.createTextNode(c === 'ETC' ? '명' : ' / ' + TARGET + '명'));
-    row.append(lab, tr, v); q.append(row);
-  });
-
-  // 날짜별
-  var dd = $('pDays'); dd.replaceChildren();
-  var byDay = {}; rows.forEach(function(r){ var d = r.submitted_at.slice(0, 10); if (d) byDay[d] = (byDay[d] || 0) + 1; });
-  var days = Object.keys(byDay).sort();
-  if (!days.length) dd.append(el('p', 'empty', '아직 응답이 없습니다.'));
-  else {
-    var cur = new Date(days[0] + 'T00:00:00Z'), end = new Date(days[days.length - 1] + 'T00:00:00Z'), seq = [];
-    while (cur <= end && seq.length < 60) { seq.push(cur.toISOString().slice(0, 10)); cur = new Date(cur.getTime() + 86400000); }
-    var dmax = Math.max.apply(null, seq.map(function(d){ return byDay[d] || 0; }));
-    seq.forEach(function(d){
-      var n = byDay[d] || 0, c = el('div', 'day');
-      var bar = el('i'); bar.style.height = (n / dmax * 100) + '%';
-      c.append(el('b', 'num', n ? String(n) : ''), bar, el('span', 'num', d.slice(5).replace('-', '/')));
-      dd.append(c);
-    });
-  }
-
-  // 문항별
-  var one = function(key){ return function(r){ return r[key] ? [[r[key], 1]] : []; }; };
-  bars($('pQ2'), Object.keys(L.q2), function(k){ return L.q2[k]; }, rows, one('q2'));
-  bars($('pQ3'), ['le2020','2021','2022','2023','2024','2025','2026'], function(k){ return L.q3[k]; }, rows, one('q3'));
-  bars($('pQ4'), ['plan','noplan','unsure','moved','direct'], function(k){ return L.q4[k]; }, rows, one('q4'));
-  bars($('pQ6'), Object.keys(L.q6), function(k){ return L.q6[k]; }, rows, one('q6'), {sort:true});
-  bars($('pQ5'), Object.keys(L.q5), function(k){ return L.q5[k]; }, rows, function(r){ var out = []; [r.q5_1, r.q5_2, r.q5_3].forEach(function(v, i){ if (v) out.push([v, 3 - i]); }); return out; }, {sort:true, weighted:true});
-  bars($('pQ7'), Object.keys(L.q7), function(k){ return L.q7[k]; }, rows, function(r){ return r._q7.map(function(v){ return [v, 1]; }); }, {sort:true});
-  bars($('pQ9'), Object.keys(L.q9), function(k){ return L.q9[k]; }, rows, one('q9'));
-  var sure = rows.map(function(r){ return r.q9_sure; }).filter(function(v){ return v !== null; });
-  $('sureNote').textContent = sure.length ? '계획의 확신 정도 평균 ' + Math.round(sure.reduce(function(a, b){ return a + b; }, 0) / sure.length) + '% (' + sure.length + '명)' : '';
-
-  // Q8 점 그림
-  var p8 = $('pQ8'); p8.replaceChildren();
-  if (!rows.length) p8.append(el('p', 'empty', '아직 응답이 없습니다.'));
-  else {
-    var box = el('div', 'dots');
-    Object.keys(L.q8).forEach(function(item){
-      var key = 'q8_' + item, row = el('div', 'dotrow'), tr = el('div', 'dot-t');
-      var vals = rows.map(function(r){ return r[key]; }).filter(function(v){ return v !== null; });
-      CC.forEach(function(c){
-        var cv = rows.filter(function(r){ return r.q1 === c && r[key] !== null; }).map(function(r){ return r[key]; });
-        if (!cv.length) return;
-        var m = cv.reduce(function(a, b){ return a + b; }, 0) / cv.length, d = el('i');
-        d.style.left = ((m - 1) / 4 * 100) + '%'; d.style.background = color(c); d.title = L.q1[c] + ' ' + fmt1(m) + ' (' + cv.length + '명)';
-        tr.append(d);
-      });
-      row.append(el('div', 'bar-l', L.q8[item]), tr, el('div', 'bar-v num', vals.length ? fmt1(vals.reduce(function(a, b){ return a + b; }, 0) / vals.length) : '–'));
-      row.lastChild.style.minWidth = '0';
-      box.append(row);
-    });
-    var ax = el('div', 'axis'); var mid = el('div'); ['1', '2', '3', '4', '5'].forEach(function(n){ mid.append(el('span', 'num', n)); });
-    ax.append(el('span'), mid, el('span', null, '평균'));
-    p8.append(box, ax);
-  }
-
-  // Q10
-  var hist = $('pHist'); hist.replaceChildren();
-  var hc = []; for (var i = 0; i <= 10; i++) hc.push(rows.filter(function(r){ return r.q10 === i; }).length);
-  var hmax = Math.max.apply(null, hc.concat([1]));
-  hc.forEach(function(n, i){ var c = el('div'); var b = el('i'); b.style.height = (n / hmax * 100) + '%'; b.style.background = i <= 6 ? 'var(--coral)' : i <= 8 ? 'var(--sun)' : 'var(--accent)'; b.title = i + '점 ' + n + '명'; c.append(b, el('span', 'num', String(i))); hist.append(c); });
-  var np = $('pNps'); np.replaceChildren();
-  (FILTER === 'ALL' ? ['ALL'].concat(CC) : [FILTER]).forEach(function(c){
-    var rs = rows.filter(function(r){ return (c === 'ALL' || r.q1 === c) && r.q10 !== null; });
-    if (!rs.length) return;
-    var pro = rs.filter(function(r){ return r.q10 >= 9; }).length, det = rs.filter(function(r){ return r.q10 <= 6; }).length;
-    var nps = Math.round((pro - det) / rs.length * 100), mean = rs.reduce(function(a, r){ return a + r.q10; }, 0) / rs.length;
-    var row = el('div', 'bar'), tr = el('div', 'bar-t'), s = el('span');
-    s.style.position = 'absolute'; s.style.top = '0'; s.style.bottom = '0'; s.style.width = (Math.abs(nps) / 2) + '%';
-    if (nps >= 0) s.style.left = '50%'; else s.style.right = '50%';
-    s.style.background = c === 'ALL' ? 'var(--ink)' : color(c);
-    var m = el('i', 'mark'); m.style.left = '50%';
-    tr.append(s, m);
-    var v = el('div', 'bar-v num'); v.append(el('b', null, (nps > 0 ? '+' : '') + nps), document.createTextNode(' · 평균 ' + fmt1(mean) + ' · ' + rs.length + '명'));
-    row.append(el('div', 'bar-l', c === 'ALL' ? '전체' : L.q1[c]), tr, v); np.append(row);
-  });
-  if (!np.children.length) np.append(el('p', 'empty', '아직 응답이 없습니다.'));
-
-  // 주관식
-  function quotes(host, key, metaOf){
-    host.replaceChildren();
-    var items = rows.filter(function(r){ return r[key]; });
-    if (!items.length) { host.append(el('p', 'empty', '아직 주관식 응답이 없습니다.')); return; }
-    items.slice(-80).reverse().forEach(function(r){ var li = el('li', null, String(r[key])); li.style.borderLeftColor = color(r.q1); li.append(el('small', null, metaOf(r))); host.append(li); });
-  }
-  quotes($('pWhy7'), 'q7_why', function(r){ return L.q1[r.q1] + ' · 고민한 나라: ' + r._q7.map(function(k){ return L.q7[k] || k; }).join(', '); });
-  quotes($('pWhy10'), 'q10_why', function(r){ return L.q1[r.q1] + ' · 추천 ' + r.q10 + '점'; });
-  quotes($('pQ11'), 'q11', function(r){ return (r.nickname || '이름 없음') + ' · ' + L.q1[r.q1] + ' · ' + r.submitted_at.replace('T', ' ').slice(5, 16); });
-
-  // 표
-  var tb = $('tbody'); tb.replaceChildren();
-  ROWS.filter(function(r){ return FILTER === 'ALL' || r.q1 === FILTER; }).slice(-300).reverse().forEach(function(r){
-    var tr = el('tr', r.excluded ? 'x' : '');
-    var c1 = el('td'); var sw = el('span', 'sw'); sw.style.background = color(r.q1); sw.style.marginRight = '6px'; c1.append(sw, document.createTextNode(L.q1[r.q1] + (r.q1_other ? ' (' + r.q1_other + ')' : '')));
-    var fl = el('td'); r._flags.forEach(function(k){ fl.append(el('span', 'flag', L.flag[k] || k)); });
-    var act = el('td'); var b = el('button', 'linkbtn', r.excluded ? '되돌리기' : '제외'); b.type = 'button';
-    b.addEventListener('click', function(){ toggleExclude(r); }); act.append(b);
-    tr.append(el('td', 'num', r.submitted_at.replace('T', ' ').slice(5, 16)), el('td', r.nickname ? null : 'muted', r.nickname || '–'), c1, el('td', null, L.q2[r.q2] || r.q2), el('td', 'num', L.q3[r.q3] || r.q3),
-      el('td', 'num', r.duration_sec === null ? '–' : r.duration_sec + '초'), el('td', 'num', r.q10 === null ? '–' : String(r.q10)), el('td', null, r.lang), el('td', null, r.src || '–'), fl, act);
-    tb.append(tr);
-  });
-  if (!tb.children.length) { var e = el('tr'); var td = el('td', 'muted', '아직 응답이 없습니다. 설문 링크를 공유하면 이곳에 표시됩니다.'); td.colSpan = 11; e.append(td); tb.append(e); }
-
-  var lg = $('legend'); lg.replaceChildren();
-  CC.forEach(function(c){ var li = el('li'); var s = el('span', 'sw'); s.style.background = color(c); li.append(s, document.createTextNode(L.q1[c])); lg.append(li); });
+  var tg = el('label', 'toggle'), cb = el('input'); cb.type = 'checkbox'; cb.id = 'showX'; cb.checked = SHOW_X;
+  cb.addEventListener('change', function(){ SHOW_X = cb.checked; draw(true); });
+  tg.append(cb, document.createTextNode('제외한 응답도 집계에 넣기')); nav.append(tg);
+  var view = $('view'); view.replaceChildren();
+  if (route === 'overview') renderOverview(view); else renderCountry(view, route);
+  document.title = (route === 'overview' ? '전체' : L.q1[route]) + ' · 왜 한국 설문 관리';
   $('updated').textContent = '· ' + ROWS.length + '건 · ' + new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'}) + ' 기준';
+  window.scrollTo(0, keepScroll ? y : 0);
 }
+window.addEventListener('hashchange', function(){ if (!$('dash').hidden) draw(false); });
 
-/* ───────────── 동작 ───────────── */
-function show(which){ $('login').hidden = which !== 'login'; $('dash').hidden = which !== 'dash'; if (which !== 'dash') $('dash').style.display = 'none'; else $('dash').style.display = 'flex'; }
-function load(){
-  if (DEMO) { draw(); return Promise.resolve(); }
+/* ───────── 서버 ───────── */
+function api(action, body){
+  return fetch(CFG.API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(Object.assign({action:action, token:TOKEN}, body || {}))}).then(function(r){ return r.json(); });
+}
+function setBusy(b){ ['btnRefresh','btnOpen','btnBackup'].forEach(function(id){ $(id).disabled = b || DEMO; }); $('btnCsv').disabled = DEMO; }
+function toast(m){ $('toast').textContent = m || ''; }
+function show(which){ $('login').hidden = which !== 'login'; $('dash').hidden = which !== 'dash'; }
+function load(keep){
+  if (DEMO) { draw(keep); return; }
   setBusy(true);
-  return api('admin_list').then(function(j){
+  api('admin_list').then(function(j){
     setBusy(false);
     if (!j.ok) { if (j.error === 'auth') logout('로그인 시간이 끝났습니다. 다시 들어가 주세요.'); else toast('불러오지 못했습니다. 잠시 뒤 새로고침해 주세요.'); return; }
-    ROWS = j.rows.map(norm); OPEN = j.open !== false; draw();
+    ROWS = j.rows.map(norm); OPEN = j.open !== false; draw(keep);
   }).catch(function(){ setBusy(false); toast('서버에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요.'); });
 }
 function logout(msg){ TOKEN = null; sstore('wk_admin', null); clearInterval(timer); ROWS = []; DEMO = false; show('login'); $('loginErr').textContent = msg || ''; }
 function toggleExclude(r){
   var next = !r.excluded;
-  if (DEMO) { r.excluded = next; draw(); return; }
-  api('admin_exclude', {id:r.id, excluded:next}).then(function(j){ if (j.ok) { r.excluded = next; draw(); } else if (j.error === 'auth') logout('로그인 시간이 끝났습니다. 다시 들어가 주세요.'); else toast('바꾸지 못했습니다.'); }).catch(function(){ toast('서버에 연결하지 못했습니다.'); });
+  if (DEMO) { r.excluded = next; draw(true); return; }
+  api('admin_exclude', {id:r.id, excluded:next}).then(function(j){ if (j.ok) { r.excluded = next; draw(true); } else if (j.error === 'auth') logout('로그인 시간이 끝났습니다. 다시 들어가 주세요.'); else toast('바꾸지 못했습니다.'); }).catch(function(){ toast('서버에 연결하지 못했습니다.'); });
 }
 function csv(){
   var esc = function(v){ v = v === null || v === undefined ? '' : String(v); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
@@ -511,26 +746,23 @@ $('loginForm').addEventListener('submit', function(e){
       : '들어가지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
   }).catch(function(){ $('loginBtn').disabled = false; $('loginErr').textContent = '서버에 연결하지 못했습니다. config.js의 API_URL과 인터넷 연결을 확인해 주세요.'; });
 });
-$('demoBtn').addEventListener('click', function(){ DEMO = true; ROWS = demoRows().map(norm); OPEN = true; show('dash'); setBusy(false); draw(); });
-$('btnRefresh').addEventListener('click', function(){ toast(''); load(); });
+$('demoBtn').addEventListener('click', function(){ DEMO = true; ROWS = demoRows().map(norm); OPEN = true; show('dash'); setBusy(false); draw(false); });
+$('btnRefresh').addEventListener('click', function(){ toast(''); load(true); });
 $('btnLogout').addEventListener('click', function(){ logout(''); });
 $('btnCsv').addEventListener('click', csv);
 $('btnOpen').addEventListener('click', function(){
   setBusy(true);
-  api('admin_set_open', {open:!OPEN}).then(function(j){ setBusy(false); if (j.ok) { OPEN = j.open; draw(); toast(OPEN ? '설문을 다시 열었습니다.' : '설문을 닫았습니다. 새 응답을 받지 않습니다.'); } else if (j.error === 'auth') logout('로그인 시간이 끝났습니다. 다시 들어가 주세요.'); }).catch(function(){ setBusy(false); toast('서버에 연결하지 못했습니다.'); });
+  api('admin_set_open', {open:!OPEN}).then(function(j){ setBusy(false); if (j.ok) { OPEN = j.open; draw(true); toast(OPEN ? '설문을 다시 열었습니다.' : '설문을 닫았습니다. 새 응답을 받지 않습니다.'); } else if (j.error === 'auth') logout('로그인 시간이 끝났습니다. 다시 들어가 주세요.'); }).catch(function(){ setBusy(false); toast('서버에 연결하지 못했습니다.'); });
 });
 $('btnBackup').addEventListener('click', function(){
   setBusy(true); toast('백업하는 중…');
-  api('admin_backup').then(function(j){ setBusy(false); toast(j.ok ? 'Google Drive에 백업했습니다: ' + j.name : '백업하지 못했습니다. Apps Script에서 setup을 먼저 실행했는지 확인해 주세요.'); }).catch(function(){ setBusy(false); toast('서버에 연결하지 못했습니다.'); });
+  api('admin_backup').then(function(j){ setBusy(false); toast(j.ok ? 'Google Drive에 백업했습니다: ' + j.name : '백업하지 못했습니다.'); }).catch(function(){ setBusy(false); toast('서버에 연결하지 못했습니다.'); });
 });
-
 function start(){
-  show('dash'); setBusy(false); draw();
-  load();
+  show('dash'); setBusy(false); draw(false); load(false);
   clearInterval(timer);
-  timer = setInterval(function(){ if (!document.hidden && TOKEN) load(); }, 60000);
+  timer = setInterval(function(){ if (!document.hidden && TOKEN) load(true); }, 60000);
 }
-
 if (PREVIEW) {
   $('loginForm').hidden = true; $('demoBtn').hidden = false;
   $('loginLead').textContent = '미리보기 모드입니다. 아직 서버(API_URL)가 연결되지 않아 예시 데이터로 화면만 확인할 수 있습니다.';
